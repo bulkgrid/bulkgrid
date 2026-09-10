@@ -1,0 +1,50 @@
+---
+title: API key scopes
+description: Choose the permissions required by your integration.
+---
+
+Create API keys in **Settings → API Keys**. Only workspace owners and admins can manage them. A valid key can still receive `403` when it lacks a required scope.
+
+## Permissions
+
+| Scope                     | Operations                                                          |
+| ------------------------- | ------------------------------------------------------------------- |
+| `search:query`            | Search indexed content                                              |
+| `mcp:use`                 | Connect to MCP tools; search tools also need `search:query`         |
+| `extract:write`           | Create extraction runs through `/extract`                           |
+| `extract:schema:generate` | Generate an extraction schema                                       |
+| `runs:write`              | Create crawl/deep-crawl runs or use `/runs`                         |
+| `runs:read`               | List and inspect runs and source run history                        |
+| `runs:cancel`             | Cancel a run                                                        |
+| `runs:retry`              | Retry a run                                                         |
+| `runs:delete`             | Request deletion of a stopped run                                   |
+| `results:read`            | List results and retrieve content/screenshots                       |
+| `sources:read`            | Read sources, documents, folders, changes, and status               |
+| `sources:write`           | Create or update sources; manual refresh also needs `runs:write`    |
+| `sources:delete`          | Remove a source or subscription                                     |
+| `sources:discover`        | Use source discovery and recommendations                            |
+| `collections:read`        | Read collections and their source/document membership               |
+| `collections:write`       | Create or update collections, rules, and document/folder selections |
+| `chat:query`              | Query the chat endpoint                                             |
+
+## Common combinations
+
+- Search integration: `search:query`.
+- MCP search with an API key: `mcp:use`, `search:query`.
+- Crawl and consume results: `runs:write`, `runs:read`, `results:read`.
+- Extract and consume results: `extract:write`, `runs:read`, `results:read`.
+- Refresh and inspect a source: `sources:write`, `runs:write`, `sources:read`, `runs:read`.
+
+Add cancellation, retry, or deletion scopes only if your integration performs those operations.
+
+## Collection restrictions
+
+A key can use `collection_scope: "all"` or `"selected"`. Selected scope requires at least one collection ID. A search's `collectionId` filter never expands the key's allowed collections.
+
+Collection restrictions govern retrieval. They are not a replacement for limiting operational scopes such as source or run management.
+
+## OAuth permissions
+
+MCP and CLI OAuth consent currently grants `mcp:use` and `search:query`, constrained to the chosen workspace and collections. OAuth login does not grant all the API-key scopes above.
+
+Use separate keys per environment and service. Rotate exposed keys and revoke connections that no longer need access.

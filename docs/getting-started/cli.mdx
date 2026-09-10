@@ -1,0 +1,88 @@
+---
+title: CLI
+description: Install the Bulkgrid CLI, sign in, and configure AI clients.
+---
+
+The Bulkgrid CLI supports browser login, connection status, logout, and MCP client configuration. Use the [API](/getting-started/quickstart) or [SDK](/getting-started/sdk) to submit crawl and extraction jobs; the CLI does not provide crawl or search subcommands.
+
+## Install
+
+```bash
+npm install -g @bulkgrid/cli
+bulkgrid --help
+```
+
+You can also run commands without installing globally:
+
+```bash
+npx -y @bulkgrid/cli login
+```
+
+## Sign in
+
+```bash
+bulkgrid login
+```
+
+The browser opens the same workspace and collection consent page used by MCP clients. Sign in, review the selected workspace and collections, and approve access. Return to the terminal to confirm login completed.
+
+The connection appears as **Bulkgrid CLI** under **Settings → Connected Apps**. It receives `mcp:use` and `search:query`, with the collection restrictions you approved.
+
+```bash
+bulkgrid status
+bulkgrid logout
+```
+
+`status` checks server access and refreshes expired tokens when needed. `logout` revokes this CLI connection and removes local tokens; other devices and your browser login remain separate.
+
+## Login options
+
+| Option             | Purpose                                        |
+| ------------------ | ---------------------------------------------- |
+| `--url <base-url>` | Use another Bulkgrid deployment                |
+| `--no-browser`     | Print the authorization URL without opening it |
+
+Use the same base URL for login, status, and logout, or set `BULKGRID_URL`. The default is `https://bulkgrid.com`.
+
+```bash
+bulkgrid login --url http://localhost:3000
+bulkgrid status --url http://localhost:3000
+bulkgrid logout --url http://localhost:3000
+```
+
+Remote deployments require HTTPS. Open the login link on the computer running the CLI so the local callback can complete. Login times out after five minutes; Ctrl+C cancels it.
+
+## Configure AI clients
+
+`init` configures the MCP server for Cursor, VS Code, Claude Code, and Codex using API keys:
+
+```bash
+export BULKGRID_MCP_URL='https://bulkgrid.com/api/v1/mcp'
+export BULKGRID_API_KEY='bg_live_your_api_key'
+bulkgrid init --all
+```
+
+Use `--cursor`, `--vscode`, `--claude`, or `--codex` to configure one client. Keys need `mcp:use` and `search:query` for MCP search.
+
+CLI login and AI-client login are separate connections. `init` does not copy your CLI OAuth tokens into client configuration. For browser OAuth in an AI app, follow [MCP setup](/integrations/mcp-server).
+
+| Option                          | Purpose                                                                           |
+| ------------------------------- | --------------------------------------------------------------------------------- |
+| `--mcp-url <url>`               | Override `BULKGRID_MCP_URL`                                                       |
+| `--global` / `--project`        | Choose the configuration scope where supported                                    |
+| `--yes`                         | Disable interactive prompts; provide required values through flags or environment |
+| `--auth browser`                | Open the dashboard to create an API key                                           |
+| `--auth manual` / `--auth skip` | Paste a key or configure authentication later                                     |
+| `--write-api-key`               | Store the supplied key in generated JSON config; avoid committing these files     |
+
+## Local credentials and recovery
+
+Tokens are stored per deployment in `~/.config/bulkgrid` with owner-only file permissions. The CLI refreshes tokens automatically and keeps them out of project configuration.
+
+If remote logout fails, credentials remain available for retry. If access was already revoked, or after revoking it in Connected Apps, clear the local credentials with:
+
+```bash
+bulkgrid logout --local
+```
+
+This option removes local tokens only. If a command reports a leftover authentication lock after a process stopped, ensure no authentication command is running before removing the specific lock file identified by the error.

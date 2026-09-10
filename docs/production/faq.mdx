@@ -1,0 +1,32 @@
+---
+title: FAQ
+description: Fast answers to common questions from evaluators and integrators.
+---
+
+## Is search synchronous?
+
+Yes. `POST /api/v1/search` returns results directly.
+
+## Are crawl and extraction workflows asynchronous?
+
+Yes. They create runs that you inspect through the runs API.
+
+## How do I authenticate?
+
+Use `x-api-key` or a bearer header for API keys. MCP and CLI clients can use browser OAuth. See [Authentication](/getting-started/authentication).
+
+## Should I call Bulkgrid directly from the browser?
+
+No. Use your backend or worker layer.
+
+## How do I know when a run is finished?
+
+Poll `GET /api/v1/runs/{runId}` until status is `completed`, `failed`, or `cancelled`.
+
+## How do I get screenshots?
+
+Use `GET /api/v1/runs/{runId}/results/{resultId}/screenshot` to retrieve a signed URL.
+
+## What should I do on `429`?
+
+Back off, retry with jitter, and reduce concurrency or polling frequency.

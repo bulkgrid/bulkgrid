@@ -1,0 +1,36 @@
+---
+title: Usage Metrics
+description: Understand the current usage, summary, and analytics surfaces in the Bulkgrid product.
+---
+
+Use the dashboard usage views to inspect usage, included quantities, and overage totals for your workspace.
+
+## Current usage surfaces
+
+- current usage and limits
+- usage summary by metric
+- usage analytics over time
+
+The current usage analytics endpoint is specifically centered on API call activity over `7d`, `30d`, or `3m` ranges.
+
+## Tracked metrics
+
+Examples include:
+
+- crawled pages
+- converted files
+- indexed pages monthly
+- storage used
+- API calls
+
+The usage summary endpoint currently computes the monthly period from the current UTC year-month and combines:
+
+- usage events
+- usage counters
+- current storage totals
+
+It returns included quantity, overage quantity, total quantity, and overage cost per metric.
+
+## Apply the numbers
+
+Monitor consumption before increasing crawl size or request concurrency. A rate-limit error and an exhausted plan allowance need different handling; see [Plan limits](/production/plan-gating-and-limits).

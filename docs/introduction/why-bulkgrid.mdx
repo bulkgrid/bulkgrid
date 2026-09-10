@@ -1,0 +1,73 @@
+---
+title: Why Bulkgrid
+description: Understand why workspaces use Bulkgrid instead of stitching together scraping, extraction, and retrieval tools by hand.
+---
+
+
+Most workspaces do not want to spend time building and maintaining a custom web ingestion layer. They want usable content and structured data that can feed AI systems, search experiences, and internal workflows.
+
+Bulkgrid brings the main parts of that problem into one platform:
+
+- search over indexed content
+- structured extraction from URLs
+- crawl and deep crawl workflows
+- asynchronous run management
+- result retrieval for downstream processing
+
+## The problem Bulkgrid solves
+
+Without a platform approach, workspaces usually end up with some combination of:
+
+- one-off scraping scripts
+- brittle page-specific parsers
+- separate crawling and extraction tools
+- ad hoc retry logic
+- weak visibility into job status and failures
+- inconsistent output formats across workflows
+
+That creates operational drag before the AI layer even starts.
+
+## Why workspaces choose Bulkgrid
+
+### One API surface for multiple workflows
+
+Customers do not need separate tools for retrieval, crawling, and structured extraction. The same platform supports search, extraction, crawl, deep crawl, and run lifecycle management.
+
+### Better fit for AI systems
+
+AI systems need more than raw HTML. They need:
+
+- normalized content
+- structured extraction output
+- retrieval-ready text
+- controlled knowledge boundaries
+- repeatable processing workflows
+
+### Less operational burden
+
+Bulkgrid gives customers explicit run tracking, retry paths, and output retrieval patterns instead of forcing every integration to invent those from scratch.
+
+### Stronger governance
+
+The product direction reflected in the current docs and capability content emphasizes controlled ingestion, scoped access, and ongoing freshness rather than uncontrolled scraping.
+
+## What Bulkgrid is best for
+
+Bulkgrid is a strong fit when you need to:
+
+- ingest public websites into AI knowledge systems
+- search indexed content for retrieval workflows
+- extract structured facts from public pages
+- build customer-facing search or internal support tools
+- keep knowledge sources fresh over time
+
+## What customers compare it against
+
+Customers often compare Bulkgrid to:
+
+- custom scraping and crawling scripts
+- narrow extractor-only tools
+- generic scraping APIs without higher-level run workflows
+- retrieval systems that assume ingestion is already solved
+
+Bulkgrid is strongest when the customer wants a maintained ingestion and retrieval layer, not just raw page fetches.

@@ -1,0 +1,151 @@
+---
+title: Understanding Runs and Results
+description: Learn how Bulkgrid models asynchronous work, statuses, and output retrieval.
+---
+
+Most Bulkgrid write-style workflows are run-based. Instead of returning the full output immediately, the API creates a run that you inspect and retrieve results from.
+
+## When you will work with runs
+
+You should expect run lifecycle handling for:
+
+- extraction requests
+- crawl requests
+- deep crawl requests
+- generic run creation through `POST /api/v1/runs`
+
+Search is different. `POST /api/v1/search` returns results directly in the response.
+
+## Run object basics
+
+A run response includes fields that help you monitor progress and operational state.
+
+Important fields:
+
+- `id`: the run identifier used for later requests
+- `status`: current lifecycle state
+- `type`: `crawl`, `deep_crawl`, or `extract`
+- `urls`: URLs associated with the run
+- `queued`, `in_progress`, `done`, `failed`: counters for work distribution
+- `created_at`, `started_at`, `completed_at`, `updated_at`: timing fields
+- `last_error`, `error_code`, `error_count`: failure context
+
+## Status values
+
+The current API exposes these run statuses:
+
+- `pending`: the run has been accepted but work has not started yet
+- `processing`: the run is actively being worked on
+- `completed`: the run finished successfully enough for results to be retrieved
+- `failed`: the run ended in failure
+- `cancelled`: the run was cancelled before completion
+
+## Typical lifecycle
+
+1. Create a run with `POST /api/v1/extract`, `POST /api/v1/crawl`, or `POST /api/v1/deep-crawl`.
+2. Store the returned `id`.
+3. Poll `GET /api/v1/runs/{runId}` until the run reaches a terminal state.
+4. If the status is `completed`, call `GET /api/v1/runs/{runId}/results`.
+5. If needed, retrieve content or screenshots from individual results.
+6. If the run fails, inspect error fields and decide whether to retry.
+
+## Check run status
+
+```bash
+curl "$BULKGRID_BASE_URL/api/v1/runs/$RUN_ID" \
+  -H "x-api-key: $BULKGRID_API_KEY"
+```
+
+Example shape:
+
+```json
+{
+  "id": "6f7d3ee0-8d8e-46db-9191-9d6a3df9cb31",
+  "status": "processing",
+  "type": "crawl",
+  "queued": 10,
+  "in_progress": 3,
+  "done": 5,
+  "failed": 0,
+  "started_at": "2026-04-13T18:12:10.000Z",
+  "completed_at": null,
+  "last_error": null,
+  "statistics": {
+    "total_results": 5,
+    "success_count": 5,
+    "error_count": 0,
+    "total_size": 123456,
+    "average_response_time": 942
+  }
+}
+```
+
+## List results
+
+```bash
+curl "$BULKGRID_BASE_URL/api/v1/runs/$RUN_ID/results" \
+  -H "x-api-key: $BULKGRID_API_KEY"
+```
+
+The response includes pagination fields and a `results` array.
+
+Important result fields include:
+
+- `id`: result identifier
+- `url`: the source URL
+- `final_url`: the final destination after redirects, if any
+- `title`: discovered page title
+- `status_code`: HTTP status of the fetched page
+- `markdown_url`, `clean_html_url`, `raw_html_url`: links to generated result content when available
+- `screenshot`: screenshot indicator or reference data when captured
+- `error_message`: failure context for an individual result
+- `extraction_data`: structured extraction output when relevant
+
+## Retrieve result content
+
+Bulkgrid currently exposes result content and screenshot retrieval endpoints.
+
+### Screenshot retrieval
+
+```bash
+RESULT_ID='aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee'
+
+curl "$BULKGRID_BASE_URL/api/v1/runs/$RUN_ID/results/$RESULT_ID/screenshot" \
+  -H "x-api-key: $BULKGRID_API_KEY"
+```
+
+Example response:
+
+```json
+{
+  "signedUrl": "https://storage.example.com/signed/screenshot.png"
+}
+```
+
+### Content retrieval
+
+Use `GET /api/v1/runs/{runId}/results/{resultId}/content` to fetch result content. Use `type=markdown`, `cleanHtml`, `rawHtml`, or `links`; the body is text rather than a JSON envelope. See [Fetch results](/guides/fetch-results) for response types and downloads.
+
+## Polling guidance
+
+A practical default strategy:
+
+- poll every 2 to 5 seconds for active runs
+- increase the interval for large crawl jobs
+- stop polling once the run is `completed`, `failed`, or `cancelled`
+- enforce a client-side timeout so requests do not wait forever
+
+## Retry and cancellation
+
+Bulkgrid also exposes:
+
+- `POST /api/v1/runs/{runId}/retry`
+- `POST /api/v1/runs/{runId}/cancel`
+
+Use retry when a failed run should be attempted again, and cancel when the run is no longer useful and should stop consuming work.
+
+## Next steps
+
+- Read [Check Status](/guides/check-status)
+- Read [Fetch Results](/guides/fetch-results)
+- Read [Retry and Cancel Runs](/guides/retry-and-cancel-runs)

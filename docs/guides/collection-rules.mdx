@@ -1,0 +1,50 @@
+---
+title: Collection Rules
+description: Use include and exclude rules to build precise collection boundaries.
+---
+
+Collections in Bulkgrid are not just named groups. They support rule-based curation.
+
+## Rule model
+
+Collection rules support:
+
+- action: `include` or `exclude`
+- target: `source`, `folder`, or `url`
+- source context through `source_id`
+- target value through `target_id`
+- optional metadata on added rules
+
+## Read and update rules
+
+`GET /api/v1/collections/{collectionId}/rules` requires `collections:read`. `PATCH` on the same path requires `collections:write` and accepts `add` and `remove` arrays.
+
+Each rule uses `action`, `target`, `source_id`, and `target_id`. Source targets identify the source, folder targets identify a folder path, and URL targets identify a document URL. Use IDs and paths returned for sources available to your workspace.
+
+## What this lets customers do
+
+- include an entire source
+- include one folder from a source
+- exclude a noisy subfolder
+- include or exclude specific URLs
+
+## What the API returns
+
+The rules endpoint does more than just list rules. It also returns:
+
+- aggregate rule counts
+- effective counts by source
+
+That matters because customers need to understand the actual collection boundary after include and exclude rules interact.
+
+## Related collection operations
+
+Bulkgrid also supports:
+
+- linking sources to collections
+- linking documents to collections with include/exclude rules
+- linking folders to collections with include/exclude rules
+
+## Why this matters
+
+This is one of the biggest practical differences between a curated knowledge platform and a naive “search everything” approach.

@@ -1,0 +1,97 @@
+---
+title: Extraction
+description: Extract structured data from one or more URLs with asynchronous Bulkgrid runs.
+icon: braces
+---
+
+Use extraction when you want fields, not just content.
+
+## When extraction is the right tool
+
+Extraction is a strong fit for:
+
+- company and product profiles
+- pricing or policy extraction
+- structured enrichment for downstream systems
+- repeatable data collection from public pages
+
+## Design the request carefully
+
+Good extraction quality usually depends more on request design than on retry count.
+
+Keep the request:
+
+- narrow enough to be realistic
+- specific about what should be extracted
+- backed by a schema that downstream systems can actually use
+
+## Request examples
+
+<CodeGroup>
+```bash cURL
+curl "$BULKGRID_BASE_URL/api/v1/extract" \
+  -H 'Content-Type: application/json' \
+  -H "x-api-key: $BULKGRID_API_KEY" \
+  -d '{
+    "type": "extract",
+    "urls": [
+      "https://example.com",
+      "https://example.com/pricing"
+    ],
+    "query": "Extract company name, product summary, and pricing details",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "companyName": { "type": "string" },
+        "productSummary": { "type": "string" },
+        "pricing": { "type": "string" }
+      },
+      "required": ["companyName"]
+    },
+    "maxRetries": 3
+  }'
+```
+
+```js Node.js
+import { BulkgridClient } from '@bulkgrid/sdk';
+
+const client = new BulkgridClient({
+  apiKey: process.env.BULKGRID_API_KEY ?? '',
+  baseUrl: process.env.BULKGRID_BASE_URL ?? 'https://bulkgrid.com',
+});
+
+const run = await client.extract({
+  urls: ['https://example.com', 'https://example.com/pricing'],
+  query: 'Extract company name, product summary, and pricing details',
+  schema: {
+    type: 'object',
+    properties: {
+      companyName: { type: 'string' },
+      productSummary: { type: 'string' },
+      pricing: { type: 'string' },
+    },
+    required: ['companyName'],
+  },
+  maxRetries: 3,
+});
+```
+
+</CodeGroup>
+
+## Workflow
+
+1. submit the extraction request
+2. store the run ID
+3. poll `GET /api/v1/runs/{runId}`
+4. fetch `GET /api/v1/runs/{runId}/results`
+5. read `extraction_data` from the result records
+
+## Common quality problems
+
+- the schema asks for data the source does not contain
+- the query is too broad
+- the page requires interaction or access patterns the request does not account for
+
+## Recommendation
+
+Start with the smallest schema that delivers value. Expand later once the output is stable.

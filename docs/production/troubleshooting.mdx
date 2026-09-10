@@ -1,0 +1,51 @@
+---
+title: Troubleshooting
+description: Resolve common Bulkgrid integration problems quickly.
+---
+
+## `401 Unauthorized`
+
+Check that:
+
+- `x-api-key` or the bearer `Authorization` header is present
+- the API key or OAuth token is valid for the deployment you are calling
+- proxies are not stripping custom headers
+
+## `400 Bad Request`
+
+Check that:
+
+- required fields are present, including `type` for raw crawl, deep-crawl, and extraction requests
+- URLs are valid URIs
+- numeric fields such as `limit` or scoring weights are inside allowed ranges
+- extraction schemas are valid JSON objects
+
+## Run never reaches `completed`
+
+Check that:
+
+- you are polling `GET /api/v1/runs/{runId}`
+- the run is not stuck in `failed` or `cancelled`
+- you are inspecting `last_error` and related fields
+- your client timeout is not shorter than the job duration you expect
+
+## Results are missing content
+
+Not every result will have every output format. Confirm that:
+
+- you requested the relevant formats
+- the source page could actually produce that content format
+- the result does not contain an `error_message`
+
+## Search results look weak
+
+Check that:
+
+- the underlying content is already indexed
+- the query is specific enough
+- ranking controls are still using sensible defaults
+- you are scoping by collection where appropriate
+
+## `403 Forbidden`
+
+Check the endpoint's required scopes, workspace membership, collection restrictions, and Connected Apps revocation status. OAuth CLI/MCP connections have search and MCP permissions, not run-management scopes. For plan-limit errors, inspect `details.code` and [plan limits](/production/plan-gating-and-limits).

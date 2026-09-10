@@ -1,0 +1,61 @@
+---
+title: Backend Integration
+description: Use Bulkgrid from your backend or worker layer for safer, cleaner production integrations.
+---
+
+Bulkgrid should normally sit behind your backend, not inside browser code.
+
+## Why this is the default architecture
+
+- API keys stay private
+- retries and polling stay in one place
+- run IDs can be stored durably
+- your application can normalize results before exposing them to users
+
+## Recommended flow
+
+1. your application sends a request to your backend
+2. your backend calls Bulkgrid
+3. your backend stores the run ID for async workflows
+4. a worker or scheduled task polls for completion when needed
+5. your backend returns normalized results to the rest of your system
+
+## Example
+
+<CodeGroup>
+```js Node.js
+import { BulkgridClient } from '@bulkgrid/sdk';
+
+const client = new BulkgridClient({
+apiKey: process.env.BULKGRID_API_KEY ?? '',
+baseUrl: process.env.BULKGRID_BASE_URL ?? 'https://bulkgrid.com',
+});
+
+const data = await client.search({
+query: 'pricing',
+limit: 5,
+});
+return data.results;
+
+````
+
+```bash cURL
+curl "$BULKGRID_BASE_URL/api/v1/search" \
+  -H 'Content-Type: application/json' \
+  -H "x-api-key: $BULKGRID_API_KEY" \
+  -d '{
+    "query": "pricing",
+    "limit": 5
+  }'
+````
+
+</CodeGroup>
+
+## Async workflow recommendation
+
+For extraction, crawl, and deep crawl:
+
+- create the run in an API route or job handler
+- persist the run ID and customer context
+- move polling to background work when the user should not wait inline
+- return a clean status model to your own frontend

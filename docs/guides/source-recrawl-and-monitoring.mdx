@@ -1,0 +1,40 @@
+---
+title: Refresh and monitoring
+description: Refresh website and GitHub sources and check indexing progress.
+---
+
+## Request a manual refresh
+
+Requires `sources:write` and `runs:write`. Manual refresh requires an active or trialing paid plan; otherwise the API returns `403` with `LIMIT_MANUAL_REINDEX`.
+
+```bash
+curl -X POST "$BULKGRID_BASE_URL/api/v1/sources/$SOURCE_ID/recrawl" \
+  -H "x-api-key: $BULKGRID_API_KEY"
+```
+
+The response identifies the source and run. Inspect the returned run rather than assuming a refresh has already completed.
+
+| Source                    | Refresh behavior                                                                                |
+| ------------------------- | ----------------------------------------------------------------------------------------------- |
+| Website, `discover`       | Deep crawl using the source's crawl configuration                                               |
+| Website, `selected_pages` | Crawl the selected document URLs; the source identifier is the fallback when no URLs are stored |
+| GitHub repository         | A `source_sync` run for repository content                                                      |
+
+A shared source remains shared when refreshed. Refreshing it does not create a private copy for the requesting workspace.
+
+## Scheduled refresh
+
+Website source configuration supports `crawl_interval` and, for `custom`, `custom_interval_minutes`. GitHub creation supports `daily`, `weekly`, and `monthly`. Available frequencies depend on the plan; handle returned plan-limit errors rather than assuming every interval is available.
+
+## Check source status
+
+Requires `sources:read`:
+
+```bash
+curl "$BULKGRID_BASE_URL/api/v1/sources/$SOURCE_ID/status" \
+  -H "x-api-key: $BULKGRID_API_KEY"
+```
+
+The status includes `isCrawling`, `latestStatus`, `latestError`, `totalSize`, `totalItems`, and `indexedItems`. Use indexed counts and errors to distinguish ingestion progress from searchable content.
+
+Use `GET /api/v1/sources/{sourceId}/runs` with `runs:read` for history. Use [run status](/guides/check-status) to inspect a particular job and [source documents](/guides/source-documents-and-changes) to inspect its content.

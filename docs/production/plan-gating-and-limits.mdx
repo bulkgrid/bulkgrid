@@ -1,0 +1,34 @@
+---
+title: Plan Gating and Limits
+description: Understand how plan boundaries affect collections, runs, and usage-sensitive workflows.
+---
+
+Some product capabilities are explicitly plan-sensitive.
+
+## Confirmed current behavior
+
+Collection creation is gated above the free plan.
+
+That behavior is implemented directly in the collections API. On the free tier, the API returns a structured `forbidden` response with a `LIMIT_COLLECTIONS` code and an `upgrade_plan` upgrade target.
+
+## Other usage-sensitive areas
+
+The product also enforces or tracks usage around areas such as:
+
+- sources
+- concurrent runs
+- crawled pages
+- converted files
+- indexed pages per month
+- storage
+- API calls
+
+## Source limits
+
+- Free can subscribe to existing public sources. Creating a new public source requires Pro (`LIMIT_PUBLIC_SOURCE_CREATION_REQUIRES_PRO`).
+- Private-source and public-subscription counts are plan-limited (`LIMIT_PRIVATE_SOURCES`, `LIMIT_PUBLIC_SOURCES`).
+- GitHub repository sources require Pro.
+- Manual source refresh requires an active or trialing paid plan (`LIMIT_MANUAL_REINDEX`).
+- Daily public-source refresh can return `LIMIT_RECRAWL_FREQUENCY` on an unsupported plan.
+
+Read `details.code`, `details.current`, `details.limit`, and `details.upgradeTarget` when present. Reduce the requested workload or change the plan; repeated retries do not resolve a plan restriction. Use the dashboard for your workspace's current allowances rather than hardcoding pricing values.

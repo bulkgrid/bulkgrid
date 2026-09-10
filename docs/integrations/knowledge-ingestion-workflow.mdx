@@ -1,0 +1,33 @@
+---
+title: Knowledge Ingestion Workflow
+description: Build a repeatable ingestion workflow for documentation, support content, and linked documents.
+---
+
+Bulkgrid is a good fit when you need a repeatable process for turning public web content into searchable knowledge.
+
+## Persistent Bulkgrid search corpus
+
+1. Add a website source, subscribe to an existing public source, or add a GitHub repository.
+2. Configure the source's content boundaries and refresh schedule.
+3. Check source status and indexed document counts.
+4. Add the source or selected documents to a collection.
+5. Grant an API key or OAuth client access to that collection and query search.
+
+See [Sources](/guides/source-management) and [Collections](/guides/collections-and-access).
+
+## Export content to your own system
+
+For a one-off export, create a crawl or extraction run, poll it, and retrieve results. Store the outputs in your own system if needed. Do not assume a one-off run establishes a persistent source subscription.
+
+## Why customers use this pattern
+
+- support bots need broader source coverage
+- internal assistants need current documentation
+- retrieval quality depends on cleaner source inputs
+
+## Good operational habits
+
+- keep source scope explicit
+- separate public and internal knowledge domains
+- measure ingestion success and failure rates
+- validate content quality before large-scale rollout

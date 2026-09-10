@@ -1,0 +1,26 @@
+---
+title: Timeouts and Long-Running Jobs
+description: Plan for variable completion times across synchronous and asynchronous Bulkgrid workflows.
+---
+
+
+Bulkgrid exposes both synchronous and asynchronous behaviors, and customers should design around that distinction.
+
+## Search is synchronous
+
+`POST /api/v1/search` returns immediately in the response cycle. Your application should still set sensible HTTP client timeouts, but you do not need run polling for search.
+
+## Extraction and crawl workflows are asynchronous
+
+For extraction, crawl, and deep crawl workflows:
+
+- the create request returns a run object
+- completion time depends on workload and source behavior
+- your application should poll status rather than waiting on a single long request
+
+## Recommended timeout strategy
+
+- keep create-run request timeouts short enough to fail fast on network issues
+- use polling for job completion instead of long blocking HTTP calls
+- enforce a maximum total wait time in your own system
+- move long-running workflows to background jobs when user experience depends on responsiveness

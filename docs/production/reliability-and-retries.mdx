@@ -1,0 +1,57 @@
+---
+title: Reliability and Retries
+description: Design Bulkgrid integrations to recover cleanly from transient failures and long-running work.
+---
+
+Store run IDs and distinguish request failures from job failures so recovery does not create duplicate work.
+
+## Reliability model
+
+Bulkgrid includes asynchronous run handling, explicit status checks, and retry endpoints. Your application should treat Bulkgrid as an external service with network failure, rate limiting, and job-level failure scenarios.
+
+## Recommended client behavior
+
+- keep all Bulkgrid calls on the server side
+- store run IDs durably
+- poll with bounded intervals
+- stop polling on terminal states
+- inspect error fields before retrying
+
+## Retry guidance
+
+Retry is reasonable for:
+
+- temporary network issues between your system and Bulkgrid
+- `429` rate limiting after backoff
+- transient provider or crawl failures
+
+Retry is not reasonable when:
+
+- the request payload is invalid
+- the target URL is permanently unavailable
+- the extraction request is poorly scoped and needs redesign
+
+## Backoff guidance
+
+A practical default is exponential backoff with jitter for request-level failures, combined with slower polling intervals for long-running jobs.
+
+## What to log
+
+At minimum log:
+
+- request endpoint
+- run ID
+- status transitions
+- last error fields
+- retry count
+- final outcome
+
+## Avoid duplicate run creation
+
+A timeout on a create request does not prove that no run was created. Check recent runs before submitting the same work again. The public contract does not promise idempotent create requests.
+
+Retry read requests after transient failures with bounded exponential backoff and jitter. Retry a known run through its retry endpoint when appropriate; the response identifies the retry run to track.
+
+## Delete stopped runs
+
+Cancel an active run first and wait for it to stop. Deletion returns `202` when accepted; background cleanup can still be pending.

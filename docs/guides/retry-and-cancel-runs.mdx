@@ -1,0 +1,57 @@
+---
+title: Retry and Cancel Runs
+description: Recover from failures and stop in-flight work when it is no longer needed.
+icon: refresh-cw
+---
+
+
+Bulkgrid exposes explicit endpoints for retrying and cancelling runs.
+
+## Retry a run
+
+```bash
+curl -X POST "$BULKGRID_BASE_URL/api/v1/runs/$RUN_ID/retry" \
+  -H 'Content-Type: application/json' \
+  -H "x-api-key: $BULKGRID_API_KEY" \
+  -d '{}'
+```
+
+The API also supports a payload with a `urls` array for targeted retry behavior when appropriate.
+
+Use retry when:
+
+- the run failed for transient reasons
+- individual URLs should be retried
+- your application can safely tolerate repeated processing
+
+## Cancel a run
+
+```bash
+curl -X POST "$BULKGRID_BASE_URL/api/v1/runs/$RUN_ID/cancel" \
+  -H "x-api-key: $BULKGRID_API_KEY"
+```
+
+Expected success response:
+
+```json
+{
+  "success": true
+}
+```
+
+## When to retry vs cancel
+
+Retry when the work is still useful and failure appears recoverable.
+
+Cancel when:
+
+- the request is obsolete
+- the customer changed scope
+- downstream systems no longer need the output
+- the run is consuming resources you no longer want to spend
+
+## Operational guidance
+
+- do not blindly retry permanent failures
+- log `last_error`, `error_code`, and run status history
+- make retry decisions in your backend, not from browser clients

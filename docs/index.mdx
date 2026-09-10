@@ -1,0 +1,109 @@
+---
+title: Introduction
+description: Index sources, organize collections, and retrieve grounded content for your applications.
+---
+
+Bulkgrid turns website and GitHub content into searchable knowledge. Add sources, organize their documents into collections, and give your application or AI client access to the content it needs.
+
+You can also crawl URLs and extract structured data as asynchronous jobs.
+
+## Get started
+
+### Connect your coding agent
+
+Choose your client, add Bulkgrid, and sign in through your browser. Review the preselected workspace and choose which collections the agent can access.
+
+<Tabs>
+  <Tab title="Codex" icon="/logo/clients/codex.svg">
+    Run in your terminal with the Codex CLI installed:
+
+    ```bash
+    codex mcp add bulkgrid --url https://bulkgrid.com/api/v1/mcp
+    ```
+
+    Complete the browser sign-in if prompted. To start sign-in separately, run `codex mcp login bulkgrid`. Open a new Codex session after connecting.
+
+    [Codex MCP setup](https://developers.openai.com/codex/mcp)
+  </Tab>
+  <Tab title="Claude Code" icon="/logo/clients/claude.svg">
+    Run in your project's terminal with Claude Code installed:
+
+    ```bash
+    claude mcp add --transport http bulkgrid https://bulkgrid.com/api/v1/mcp
+    ```
+
+    Open Claude Code, run `/mcp`, and select **bulkgrid** to authenticate in your browser.
+
+    [Claude Code MCP setup](https://code.claude.com/docs/en/mcp)
+  </Tab>
+  <Tab title="Cursor" icon="/logo/clients/cursor.svg">
+    Add this server to `.cursor/mcp.json` in your project. If the file already contains servers, add **bulkgrid** inside its existing `mcpServers` object.
+
+    ```json .cursor/mcp.json
+    {
+      "mcpServers": {
+        "bulkgrid": {
+          "url": "https://bulkgrid.com/api/v1/mcp"
+        }
+      }
+    }
+    ```
+
+    Open Cursor's MCP settings, enable **bulkgrid**, and complete the browser authentication when prompted.
+
+    [Cursor MCP setup](https://cursor.com/docs/mcp)
+  </Tab>
+  <Tab title="OpenCode" icon="/logo/clients/opencode.svg">
+    Run OpenCode's interactive setup:
+
+    ```bash
+    opencode mcp add
+    ```
+
+    Choose a **remote** server, name it **bulkgrid**, and enter `https://bulkgrid.com/api/v1/mcp`. Then sign in:
+
+    ```bash
+    opencode mcp auth bulkgrid
+    ```
+
+    [OpenCode MCP setup](https://opencode.ai/docs/cli/#mcp)
+  </Tab>
+</Tabs>
+
+Once connected, try asking your agent:
+
+```text
+List the Bulkgrid collections I can access, then search the relevant collection to answer my question. Include source URLs.
+```
+
+Your sources need to be indexed before search can return results. See [MCP setup](/integrations/mcp-server) for permissions, other clients, and troubleshooting.
+
+### Build with Bulkgrid
+
+<CardGroup cols={2}>
+  <Card title="Make your first API request" icon="code" href="/getting-started/quickstart">
+    Create a crawl, wait for completion, and retrieve Markdown.
+  </Card>
+  <Card title="Connect an AI app" icon="plug" href="/integrations/mcp-server">
+    Connect ChatGPT, Claude, Cursor, or another OAuth-capable MCP client.
+  </Card>
+  <Card title="Use the CLI" icon="terminal" href="/getting-started/cli">
+    Sign in through your browser and configure supported AI clients.
+  </Card>
+  <Card title="Use the TypeScript SDK" icon="braces" href="/getting-started/sdk">
+    Call the API from a Node.js service or worker.
+  </Card>
+</CardGroup>
+
+## Choose a workflow
+
+| Goal                                        | Start here                                    |
+| ------------------------------------------- | --------------------------------------------- |
+| Keep a website or repository indexed        | [Sources](/guides/source-management)          |
+| Control what an app can search              | [Collections](/guides/collections-and-access) |
+| Retrieve relevant passages with source URLs | [Search](/guides/search)                      |
+| Process a known list of URLs                | [Crawl](/guides/crawl)                        |
+| Discover and process a site section         | [Deep crawl](/guides/deep-crawl)              |
+| Turn pages into structured fields           | [Extraction](/guides/extraction)              |
+
+Search operates on content already indexed and accessible to your workspace. Start with [sources](/guides/source-management) if your search corpus is empty, or try the [Playground](/getting-started/playground-quickstart) before writing code.

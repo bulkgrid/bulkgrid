@@ -1,0 +1,56 @@
+---
+title: Deep Crawl
+description: Start from a single URL and ingest broader site coverage with controlled boundaries.
+icon: bug
+---
+
+Use deep crawl when you want Bulkgrid to expand outward from a starting URL and collect a broader set of pages.
+
+## Best fit
+
+Deep crawl is useful when:
+
+- you do not want to maintain a full URL list manually
+- you need broader documentation or help-center coverage
+- you want path controls around a site section
+
+## Request shape
+
+```bash
+curl "$BULKGRID_BASE_URL/api/v1/deep-crawl" \
+  -H 'Content-Type: application/json' \
+  -H "x-api-key: $BULKGRID_API_KEY" \
+  -d '{
+    "type": "deep_crawl",
+    "url": "https://example.com/docs",
+    "config": {
+      "maxDepth": 3,
+      "maxPages": 100,
+      "includePaths": ["/docs", "/blog"],
+      "excludePaths": ["/legal"],
+      "includeExternal": false,
+      "includeDocumentLinks": true,
+      "restrictToStartPath": true
+    },
+    "options": {
+      "formats": ["markdown", "cleanHtml", "links"],
+      "timeout": 30000,
+      "blockAds": true,
+      "useInteractions": true
+    }
+  }'
+```
+
+## Key controls
+
+- `maxDepth`: how far Bulkgrid should traverse from the starting URL
+- `maxPages`: upper bound on discovered pages to process
+- `includePaths`: preferred allowed path prefixes
+- `excludePaths`: path areas to avoid
+- `includeExternal`: whether external domains may be followed
+- `includeDocumentLinks`: whether document links should be included
+- `restrictToStartPath`: whether the crawl should stay under the starting path
+
+## Recommendation
+
+Keep deep crawl scope explicit. The biggest quality and cost problems in crawl systems usually come from unclear crawl boundaries.

@@ -1,0 +1,166 @@
+---
+title: TypeScript SDK
+description: Use the Bulkgrid SDK from Node.js services and workers.
+---
+
+## Install
+
+```bash
+npm install @bulkgrid/sdk@^0.2.0
+```
+
+Create a key with the scopes your workflow needs, then configure the client:
+
+```js
+import { BulkgridClient } from '@bulkgrid/sdk';
+
+const client = new BulkgridClient({
+  apiKey: process.env.BULKGRID_API_KEY ?? '',
+  baseUrl: process.env.BULKGRID_BASE_URL ?? 'https://bulkgrid.com',
+});
+```
+
+The SDK uses API-key authentication. Do not pass an OAuth token as `apiKey`.
+
+## Search indexed content
+
+Requires `search:query` and accessible indexed content:
+
+```js
+const response = await client.search({ query: 'authentication setup', limit: 5 });
+console.log(response.results);
+```
+
+## Find a source and add it to a collection
+
+Requires `sources:read`, `sources:write`, `collections:read`, `collections:write`, and `search:query`. Plan limits and collection restrictions still apply; a `403` is not a reason to retry with broader credentials automatically.
+
+```js
+// Search the public catalog and sources owned by your workspace.
+const { sources: matches } = await client.sources.search('https://example.com');
+console.log(
+  matches.map(source => ({
+    identifier: source.identifier,
+    subscribed: source.isSubscribed,
+    owned: source.isOwned,
+  })),
+);
+
+// For a website, create it or subscribe to the existing shared source.
+const { source, created } = await client.sources.create({
+  type: 'domain',
+  identifier: 'https://example.com',
+  visibility: 'public',
+});
+console.log({ sourceId: source.id, created });
+
+const { collection } = await client.collections.create({ name: 'Research' });
+await client.collections.addSource({ collectionId: collection.id, sourceId: source.id });
+
+const status = await client.sources.status(source.id);
+if (status.indexedItems > 0) {
+  const response = await client.search({ query: 'authentication setup', collectionId: collection.id });
+  console.log(response.executedQueries, response.results);
+}
+```
+
+`created: false` means the source already existed. Adding a subscription does not guarantee indexing is complete. `sources.list({ search })` searches your subscribed and owned sources; `sources.search(query)` searches the public catalog and owned sources, with subscription flags.
+
+Collection creation requires a qualifying plan. To use an existing collection, call `collections.list()` and select an appropriate accessible collection instead. `addSource` includes the whole source and keeps existing exclusions. Use `updateRules` for specific folders or URLs:
+
+```js
+await client.collections.updateRules(collection.id, {
+  add: [{ action: 'exclude', target: 'folder', source_id: source.id, target_id: '/archive' }],
+});
+const { rules, counts } = await client.collections.rules(collection.id);
+console.log(rules, counts);
+```
+
+`removeSource({ collectionId, sourceId })` removes the source's rules returned by an initial read. It requires both `collections:read` and `collections:write`; rules added concurrently after that read are left alone. Removing a source from a collection does not remove its workspace subscription.
+
+## GitHub sources and indexing
+
+```js
+const { source: githubSource, run } = await client.sources.createGithub({
+  repositoryUrl: 'https://github.com/example/docs',
+  includePaths: ['docs/**'],
+});
+console.log(githubSource.id, run.id);
+
+const page = await client.sources.documents(githubSource.id, { parent: '/', limit: 50 });
+console.log(page.documents, page.nextOffset);
+```
+
+GitHub sources require a qualifying plan and are private to the workspace. Source creation returns before ingestion completes. `sources.recrawl(id)` requests a refresh and needs `sources:write` plus `runs:write`. `sources.changes(id, { runId, kind: 'changed' })` lists changes for a specific run; paginate with `offset` and the returned `nextOffset`.
+
+## Create and monitor a crawl
+
+Requires `runs:write`, `runs:read`, and `results:read`:
+
+```js
+const run = await client.crawl({
+  urls: ['https://example.com'],
+  options: { formats: ['markdown'] },
+});
+
+const current = await client.runs.get(run.id);
+console.log(current.status);
+```
+
+Poll until `completed`, `failed`, or `cancelled`, with a maximum wait time. Once complete:
+
+```js
+const { results } = await client.runs.results(run.id, { page: 1, limit: 20 });
+const firstResult = results.find(result => !result.error_message);
+if (firstResult) {
+  const markdown = await client.runs.getResultContent(run.id, firstResult.id, { type: 'markdown' });
+  console.log(markdown);
+}
+```
+
+## Available methods
+
+| Method                               | Purpose                                        |
+| ------------------------------------ | ---------------------------------------------- |
+| `search(input)`                      | Search indexed content                         |
+| `crawl(input)`                       | Crawl known URLs                               |
+| `deepCrawl(input)`                   | Traverse from a starting URL                   |
+| `extract(input)`                     | Extract structured fields                      |
+| `runs.create(input)`                 | Create a run with an explicit `type`           |
+| `runs.list()` / `runs.get(id)`       | Inspect runs                                   |
+| `runs.cancel(id)` / `runs.retry(id)` | Stop or retry work                             |
+| `runs.delete(id)`                    | Request asynchronous deletion of a stopped run |
+| `runs.results(id)`                   | List result records                            |
+| `runs.getResultContent(...)`         | Retrieve text content                          |
+| `runs.getResultScreenshot(...)`      | Retrieve a signed screenshot URL               |
+
+`crawl`, `deepCrawl`, and `extract` add the required run `type` automatically. Raw HTTP calls and `runs.create` must include it explicitly.
+
+| Source methods                                                | Collection methods                                            |
+| ------------------------------------------------------------- | ------------------------------------------------------------- |
+| `sources.list(query?)`, `sources.search(query)`               | `collections.list()`                                          |
+| `sources.create(input)`, `sources.createGithub(input)`        | `collections.create(input)`                                   |
+| `sources.get(id)`, `sources.update(id, input)`                | `collections.get(id)`, `collections.update(id, input)`        |
+| `sources.delete(id)`                                          | `collections.delete(id)`                                      |
+| `sources.status(id)`, `sources.recrawl(id)`                   | `collections.addSource({ collectionId, sourceId })`           |
+| `sources.documents(id, query?)`, `sources.changes(id, query)` | `collections.removeSource({ collectionId, sourceId })`        |
+|                                                               | `collections.rules(id)`, `collections.updateRules(id, input)` |
+
+`sources.delete` removes your subscription to a shared source or deletes an owned source according to server permissions. See [Source management](/guides/source-management).
+
+## Handle failures
+
+```js
+import { BulkgridApiError } from '@bulkgrid/sdk';
+
+try {
+  await client.search({ query: 'release notes' });
+} catch (error) {
+  if (error instanceof BulkgridApiError) {
+    console.error(error.status, error.data);
+  }
+  throw error;
+}
+```
+
+Use `RequestOptions.signal` to cancel requests. The SDK does not automatically retry requests or poll runs. See [Retries](/production/reliability-and-retries) before retrying a create request that may already have succeeded.

@@ -1,0 +1,45 @@
+---
+title: GitHub sources
+description: Index a public GitHub repository into a workspace-owned source.
+---
+
+GitHub sources synchronize repository content directly rather than crawling GitHub's website. Repository sources require Pro and are private to the Bulkgrid workspace, even when the repository is public.
+
+## Create a source
+
+Requires `sources:write`. Use a public repository URL in the form `https://github.com/{owner}/{repo}`.
+
+```bash
+curl "$BULKGRID_BASE_URL/api/v1/sources/github" \
+  -H 'Content-Type: application/json' \
+  -H "x-api-key: $BULKGRID_API_KEY" \
+  -d '{
+    "repositoryUrl": "https://github.com/microsoft/TypeScript",
+    "includePaths": ["docs"],
+    "excludePaths": [],
+    "crawl_interval": "weekly"
+  }'
+```
+
+The server returns `202` with `source`, `run`, and `dispatchDeferred`. A deferred dispatch means the job was saved and is awaiting dispatch; avoid creating a duplicate source. Creating the same repository again in the workspace returns `409`.
+
+## Configuration
+
+| Field                          | Purpose                                                          |
+| ------------------------------ | ---------------------------------------------------------------- |
+| `repositoryUrl`                | Required public GitHub repository URL                            |
+| `ref`                          | Optional repository ref; use the repository default when omitted |
+| `includePaths`, `excludePaths` | Repository path filters                                          |
+| `label`                        | Optional display name                                            |
+| `canonical_url`                | Optional related website URL for source identity and preview     |
+| `crawl_interval`               | `daily`, `weekly`, or `monthly`; default `weekly`                |
+
+A canonical website URL does not replace the repository as the source of indexed content. The website preview can complete independently of repository synchronization.
+
+## Monitor and refresh
+
+Repository runs have `type: "source_sync"`. Poll the run and source status, and inspect indexed document counts before using search.
+
+Use `POST /api/v1/sources/{sourceId}/recrawl` for a manual sync. It requires `sources:write` and `runs:write`, plus an active paid plan. For GitHub sources this starts repository synchronization, not a website deep crawl.
+
+Add the source to a collection and authorize that collection for your application or AI client. See [Collections](/guides/collections-and-access).

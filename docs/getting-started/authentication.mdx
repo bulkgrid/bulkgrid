@@ -1,0 +1,58 @@
+---
+title: Authentication
+description: Choose API keys or OAuth and understand workspace and collection access.
+---
+
+Bulkgrid supports API keys for backend integrations and OAuth for AI apps and CLI connections. Every connection is limited to a workspace and its granted permissions.
+
+| Connection             | Authentication           | Access                                                 |
+| ---------------------- | ------------------------ | ------------------------------------------------------ |
+| Backend service or SDK | API key                  | Scopes selected when creating the key                  |
+| AI app over MCP        | Browser OAuth or API key | MCP tools and permitted search content                 |
+| Bulkgrid CLI login     | Browser OAuth            | `mcp:use` and `search:query` in the approved workspace |
+
+## API keys
+
+Create a key in [Settings → API Keys](https://bulkgrid.com/dashboard/settings/api-keys). Workspace owners and admins can create, rotate, and revoke keys. Use separate keys for development and production.
+
+Both headers are supported. Send one authentication method per request:
+
+```bash
+curl https://bulkgrid.com/api/v1/search \
+  -H 'Content-Type: application/json' \
+  -H "x-api-key: $BULKGRID_API_KEY" \
+  -d '{"query":"release notes"}'
+```
+
+The equivalent bearer header is:
+
+```text
+Authorization: Bearer bg_live_your_api_key
+```
+
+The [TypeScript SDK](/getting-started/sdk) sends the key through `x-api-key`. See [API key scopes](/guides/api-key-scopes) for permissions required by each workflow.
+
+## OAuth connections
+
+Add `https://bulkgrid.com/api/v1/mcp` to a compatible AI client, or run `bulkgrid login` from the [CLI](/getting-started/cli).
+
+Your browser opens Bulkgrid's consent page. Sign in if needed, select the workspace and collection access, and approve the connection. Your current workspace is preselected when available. The client receives tokens and handles refresh.
+
+OAuth access tokens are sent as `Authorization: Bearer <access-token>`. They currently grant `mcp:use` and `search:query`; they do not authorize creating runs, managing sources, or fetching arbitrary run results. Use a suitably scoped API key for those operations.
+
+## Workspace and collection boundaries
+
+API keys belong to a workspace. An OAuth user/client connection is bound to the workspace selected during consent. Reauthorizing the same connection retains that workspace.
+
+Keys and OAuth grants can allow all accessible collections or selected collections. A `collectionId` search filter can narrow access; it cannot grant access beyond the credential's permissions. OAuth access also requires the user to remain a member of the workspace.
+
+Manage OAuth connections under **Settings → Connected Apps**. Revocation blocks subsequent Bulkgrid API access. CLI users can also run `bulkgrid logout`.
+
+## Errors
+
+| Status | Check                                                                                         |
+| ------ | --------------------------------------------------------------------------------------------- |
+| `401`  | Missing, invalid, or expired credentials; correct server URL; preserved authentication header |
+| `403`  | Required scope, workspace membership, collection access, revoked connection, or plan limit    |
+
+Keep API keys and refresh tokens out of browser bundles, source control, and logs. Your application backend should hold service credentials.

@@ -1,0 +1,57 @@
+---
+title: Sources
+description: Add shared website sources or workspace-owned sources to your search corpus.
+---
+
+A source is a persistent content origin with documents, indexing state, and refresh history. Sources can represent websites or [GitHub repositories](/guides/github-sources).
+
+## Shared and private sources
+
+| Source            | Ownership                                                  | Removing it from a workspace                                          |
+| ----------------- | ---------------------------------------------------------- | --------------------------------------------------------------------- |
+| Public website    | Shared across workspaces; your workspace subscribes to it  | Removes your subscription, not the shared source for other workspaces |
+| Private source    | Owned by your workspace                                    | Removes the workspace-owned source and initiates associated cleanup   |
+| GitHub repository | Workspace-owned, even when the repository itself is public | Uses the private-source removal flow                                  |
+
+A public source can reuse existing indexed content. Your workspace's subscription controls its relationship to that source; it does not make the global source your private copy. Use collection rules and credentials to control retrieval access.
+
+For domain sources, identifiers normalize to the URL origin. `https://docs.example.com/foo` and `https://docs.example.com/bar` identify the same source root; choose path filters to define a site section.
+
+## Create or subscribe to a website source
+
+Requires `sources:write`. Plan limits apply: Free can subscribe to existing public sources, while creating a new public source requires Pro. Private-source limits also depend on the workspace plan.
+
+```bash
+curl "$BULKGRID_BASE_URL/api/v1/sources" \
+  -H 'Content-Type: application/json' \
+  -H "x-api-key: $BULKGRID_API_KEY" \
+  -d '{
+    "type": "domain",
+    "identifier": "https://example.com",
+    "visibility": "public",
+    "source_mode": "discover",
+    "crawl_config": { "includePaths": ["/docs"] }
+  }'
+```
+
+The response contains `source` and `created`. Save `source.id`. `created: false` can indicate reuse of an existing source. Creating the source record is not proof that documents are indexed; inspect [source status](/guides/source-recrawl-and-monitoring).
+
+## Choose the content boundary
+
+- `discover` discovers content using the source's path configuration.
+- `selected_pages` processes explicitly selected document URLs. Store them in `crawl_config.selectedUrls`.
+- Use collection rules to curate the content each application can retrieve.
+
+Website subscriptions can have workspace-specific labels, selections, and path filters. Changes to shared crawl options can affect the shared source and are plan-gated; they are distinct from selecting content for a collection.
+
+## Read, update, and remove
+
+| Method and path                           | Scope                         | Purpose                                                |
+| ----------------------------------------- | ----------------------------- | ------------------------------------------------------ |
+| `GET /api/v1/sources`                     | `sources:read`                | List accessible sources; response contains `sources`   |
+| `GET /api/v1/sources/{sourceId}`          | `sources:read`                | Read a source in the current workspace                 |
+| `PATCH /api/v1/sources/{sourceId}`        | `sources:write`               | Update supported configuration                         |
+| `DELETE /api/v1/sources/{sourceId}`       | `sources:delete`              | Remove ownership or subscription as described above    |
+| `POST /api/v1/sources/{sourceId}/recrawl` | `sources:write`, `runs:write` | Request a manual refresh; paid-plan restrictions apply |
+
+See [refresh and monitoring](/guides/source-recrawl-and-monitoring), [documents and changes](/guides/source-documents-and-changes), and [collections](/guides/collections-and-access) to complete the ingestion workflow.

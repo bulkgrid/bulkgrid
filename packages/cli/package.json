@@ -1,0 +1,40 @@
+{
+  "name": "@bulkgrid/cli",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "bulkgrid": "./dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "lint": "eslint src",
+    "check-types": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "format": "prettier --write \"src/**/*.{ts,js,md}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,js,md}\""
+  },
+  "dependencies": {
+    "@inquirer/prompts": "7.10.1",
+    "commander": "14.0.3",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {},
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=22"
+  }
+}

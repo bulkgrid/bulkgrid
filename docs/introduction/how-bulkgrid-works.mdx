@@ -1,0 +1,48 @@
+---
+title: How Bulkgrid Works
+description: Learn the high-level Bulkgrid flow from request submission to result consumption.
+---
+
+
+At a high level, Bulkgrid separates direct retrieval from longer-running ingestion and extraction workflows.
+
+## Synchronous workflow: search
+
+Search is the simplest path:
+
+1. your application sends a search request
+2. Bulkgrid returns ranked results immediately
+3. your application uses those results in UI, retrieval, or answer generation
+
+This is the best first workflow to test because it does not require polling.
+
+## Asynchronous workflows: extract, crawl, and deep crawl
+
+For extraction and crawl-style work, the flow is different:
+
+1. your backend submits a request
+2. Bulkgrid creates a run
+3. the run progresses through `pending` and `processing`
+4. results and content outputs are generated
+5. your backend polls for completion and retrieves outputs
+
+## Outputs customers consume
+
+Depending on the workflow, customers consume:
+
+- ranked search results
+- structured extraction data
+- markdown output
+- clean HTML or raw HTML
+- links and metadata
+- screenshot access
+
+## Recommended integration model
+
+The cleanest architecture is:
+
+- frontend calls your backend
+- your backend calls Bulkgrid with `x-api-key`
+- your backend stores run IDs and normalizes outputs for your own application model
+
+This keeps secrets server-side and gives you control over retries, timeouts, and user-facing error handling.

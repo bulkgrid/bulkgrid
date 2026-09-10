@@ -1,0 +1,82 @@
+---
+title: First Search Request
+description: Make your first Bulkgrid search request and understand the ranking response.
+---
+
+Use search when you already have indexed content and want immediate ranked retrieval.
+
+## Request
+
+<CodeGroup>
+```bash cURL
+curl "$BULKGRID_BASE_URL/api/v1/search" \
+  -H 'Content-Type: application/json' \
+  -H "x-api-key: $BULKGRID_API_KEY" \
+  -d '{
+    "query": "pricing page",
+    "limit": 3
+  }'
+```
+
+```js Node.js
+import { BulkgridClient } from '@bulkgrid/sdk';
+
+const client = new BulkgridClient({
+  apiKey: process.env.BULKGRID_API_KEY ?? '',
+  baseUrl: process.env.BULKGRID_BASE_URL ?? 'https://bulkgrid.com',
+});
+
+const data = await client.search({
+  query: 'pricing page',
+  limit: 3,
+});
+```
+
+</CodeGroup>
+
+## Important request fields
+
+- `query`: the search text
+- `limit`: number of results to return, up to `50`
+- `collectionId`: optional collection scope
+- `fullTextWeight`, `semanticWeight`, `rrfK`: ranking controls
+
+## Example response
+
+```json
+{
+  "query": "pricing page",
+  "scoring": {
+    "fullTextWeight": 0.3,
+    "semanticWeight": 0.7,
+    "rrfK": 60
+  },
+  "results": [
+    {
+      "chunk_id": "3f7a3578-7cec-4722-bab4-b37ba0b9c2ab",
+      "source_document_id": "0866c8e8-a384-4f52-b83f-327a1afecf1d",
+      "source_id": "a3c05cb9-5f19-4106-b8b6-b255c36c0f6d",
+      "url": "https://docs.example.com/pricing",
+      "title": "Pricing",
+      "chunk_index": 0,
+      "text_content": "Choose the plan that matches your usage...",
+      "metadata": {},
+      "fts_rank": 0.81,
+      "semantic_rank": 0.94,
+      "score": 0.9
+    }
+  ],
+  "count": 1
+}
+```
+
+## What this tells you
+
+- search is synchronous
+- each result points to a source URL and source document identifiers
+- ranking combines lexical and semantic signals
+- you can use the response directly in retrieval and answer-generation workflows
+
+## Next step
+
+Read the fuller [Search](/guides/search).

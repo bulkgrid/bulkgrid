@@ -1,0 +1,26 @@
+---
+title: API Key Security
+description: Use API keys, scopes, and collection boundaries safely in production.
+---
+
+
+Bulkgrid API keys are powerful operational credentials. The product supports enough scope and collection-boundary controls that customers should use them deliberately.
+
+## Recommended security posture
+
+- keep keys server-side
+- use separate keys per service
+- use the narrowest scopes possible
+- prefer selected collection scope over all collections when appropriate
+- rotate keys periodically and after privilege changes
+
+## Lifecycle operations
+
+The product supports:
+
+- create
+- list
+- rotate
+- update scopes
+- revoke
+- delete with retention behavior for revoked keys

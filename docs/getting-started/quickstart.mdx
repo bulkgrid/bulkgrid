@@ -1,0 +1,66 @@
+---
+title: Quickstart
+description: Create a crawl run and retrieve its content with the API.
+---
+
+This walkthrough creates a crawl run, checks its status, and retrieves Markdown. You need a Bulkgrid workspace and an API key with `runs:write`, `runs:read`, and `results:read`.
+
+Create a key in [Settings → API Keys](https://bulkgrid.com/dashboard/settings/api-keys). Workspace owners and admins can manage keys.
+
+## 1. Configure authentication
+
+```bash
+export BULKGRID_API_KEY='bg_live_your_api_key'
+export BULKGRID_BASE_URL='https://bulkgrid.com'
+```
+
+Keep the key in your backend environment. See [Authentication](/getting-started/authentication) for bearer tokens, OAuth, and access restrictions.
+
+## 2. Create a crawl
+
+```bash
+curl "$BULKGRID_BASE_URL/api/v1/crawl" \
+  -H 'Content-Type: application/json' \
+  -H "x-api-key: $BULKGRID_API_KEY" \
+  -d '{
+    "type": "crawl",
+    "urls": ["https://example.com"],
+    "options": { "formats": ["markdown"] }
+  }'
+```
+
+The response is a run object. Save its `id`; the request starts processing and does not wait for the crawl to finish.
+
+## 3. Check the run
+
+```bash
+export RUN_ID='replace-with-the-returned-run-id'
+curl "$BULKGRID_BASE_URL/api/v1/runs/$RUN_ID" \
+  -H "x-api-key: $BULKGRID_API_KEY"
+```
+
+Poll every few seconds with a maximum wait time. Stop on `completed`, `failed`, or `cancelled`. For failed runs, inspect `last_error` before deciding whether to retry.
+
+## 4. Retrieve results and Markdown
+
+```bash
+curl "$BULKGRID_BASE_URL/api/v1/runs/$RUN_ID/results" \
+  -H "x-api-key: $BULKGRID_API_KEY"
+```
+
+Choose an item from `results` and use its `id`:
+
+```bash
+export RESULT_ID='replace-with-a-result-id'
+curl "$BULKGRID_BASE_URL/api/v1/runs/$RUN_ID/results/$RESULT_ID/content?type=markdown" \
+  -H "x-api-key: $BULKGRID_API_KEY"
+```
+
+The content endpoint returns text. Individual pages can fail even when a run completes, so inspect each result's `error_message`.
+
+## Continue building
+
+- [TypeScript SDK](/getting-started/sdk) for typed API calls.
+- [Sources](/guides/source-management) for a persistent, refreshable search corpus.
+- [First search](/getting-started/first-search-request) for indexed retrieval.
+- [MCP](/integrations/mcp-server) or [CLI](/getting-started/cli) for AI and terminal connections.

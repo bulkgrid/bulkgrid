@@ -1,0 +1,57 @@
+---
+title: First Crawl Request
+description: Create your first crawl run and retrieve generated result content.
+---
+
+Use crawl when you already know which URLs you want Bulkgrid to process.
+
+## Request
+
+<CodeGroup>
+```bash cURL
+curl "$BULKGRID_BASE_URL/api/v1/crawl" \
+  -H 'Content-Type: application/json' \
+  -H "x-api-key: $BULKGRID_API_KEY" \
+  -d '{
+    "type": "crawl",
+    "urls": [
+      "https://example.com/docs",
+      "https://example.com/pricing"
+    ],
+    "options": {
+      "formats": ["markdown", "cleanHtml"],
+      "timeout": 30000,
+      "blockAds": true,
+      "useInteractions": true
+    }
+  }'
+```
+
+```js Node.js
+import { BulkgridClient } from '@bulkgrid/sdk';
+
+const client = new BulkgridClient({
+  apiKey: process.env.BULKGRID_API_KEY ?? '',
+  baseUrl: process.env.BULKGRID_BASE_URL ?? 'https://bulkgrid.com',
+});
+
+const run = await client.crawl({
+  urls: ['https://example.com/docs', 'https://example.com/pricing'],
+  options: {
+    formats: ['markdown', 'cleanHtml'],
+    timeout: 30000,
+    blockAds: true,
+    useInteractions: true,
+  },
+});
+```
+
+</CodeGroup>
+
+## What happens next
+
+Bulkgrid creates a crawl run and begins processing the URLs. When the run completes, result records can include generated markdown, clean HTML, raw HTML, links, and screenshot-related fields.
+
+## Next step
+
+Read [Crawl](/guides/crawl) and [Fetch Results](/guides/fetch-results).

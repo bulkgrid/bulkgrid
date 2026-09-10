@@ -1,0 +1,26 @@
+---
+title: Security and data access
+description: Manage credentials, source ownership, and retrieval permissions.
+---
+
+## Credentials
+
+Use API keys from backend services and workers. Keep keys, OAuth access tokens, and refresh tokens out of browser bundles, logs, and source control.
+
+API keys support `x-api-key` and bearer headers. OAuth uses bearer access tokens. Rotate API keys in Settings and revoke OAuth connections in Connected Apps. See [Authentication](/getting-started/authentication).
+
+## Source visibility
+
+Public sources are shared across workspaces through subscriptions. Do not treat a public source as a workspace-private copy. Private sources and GitHub sources are workspace-owned; GitHub ingestion currently reads public repositories into workspace-private sources.
+
+Removing a public source from your workspace removes your subscription. It does not delete the shared source for other subscribers. Removing a workspace-owned source initiates its removal and associated cleanup.
+
+## Retrieval access
+
+Use collection rules to choose content and credential restrictions to authorize access. Client-supplied search filters can narrow a credential's permissions but cannot expand them. OAuth access also depends on continued workspace membership.
+
+## Results and deletion
+
+Result content is available through authenticated endpoints. Screenshot URLs are signed and temporary. Run deletion is asynchronous: a `202` response acknowledges a deletion request, not completion of cleanup.
+
+For contractual retention periods, deletion guarantees, data residency, or regulated-data requirements, contact [support](mailto:support@bulkgrid.com). These docs do not define an SLA or compliance certification.

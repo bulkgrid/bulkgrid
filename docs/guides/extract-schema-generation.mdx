@@ -1,0 +1,45 @@
+---
+title: Extract Schema Generation
+description: Generate extraction schemas before running structured extraction workflows.
+---
+
+Bulkgrid supports extraction schema generation through a dedicated API route.
+
+## Generate a schema
+
+```bash
+curl "$BULKGRID_BASE_URL/api/v1/extract/schema" \
+  -H 'Content-Type: application/json' \
+  -H "x-api-key: $BULKGRID_API_KEY" \
+  -d '{"query":"Company name and product summary","allowNulls":true}'
+```
+
+The response contains `schema` and optional `notes`. Review the result before passing `schema` to `/api/v1/extract`.
+
+## What it does
+
+You provide:
+
+- an extraction goal or query
+- optional context
+- whether nulls should be allowed
+
+Bulkgrid returns:
+
+- a generated JSON schema
+- optional notes
+
+The current route requires the `extract:schema:generate` scope.
+
+Generated schemas are validated before the API returns them. If generation fails validation, the service retries once and then returns a structured error.
+
+## Why this matters
+
+This closes a common onboarding gap for extraction. Customers often know what they want to extract but do not yet have a stable schema design.
+
+## Recommended use
+
+- generate a first schema draft
+- review and tighten it manually
+- test the schema with a narrow extraction run
+- expand only after output is stable

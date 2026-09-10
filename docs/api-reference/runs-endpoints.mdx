@@ -1,0 +1,28 @@
+---
+title: Runs Endpoints
+description: Inspect, retry, cancel, list, and manage Bulkgrid runs.
+---
+
+
+Run lifecycle endpoints currently include:
+
+- `GET /api/v1/runs`
+- `POST /api/v1/runs`
+- `GET /api/v1/runs/{runId}`
+- `DELETE /api/v1/runs/{runId}`
+- `POST /api/v1/runs/{runId}/cancel`
+- `POST /api/v1/runs/{runId}/retry`
+
+## What these endpoints do
+
+- list existing runs
+- create run-based workflows
+- inspect run state and statistics
+- cancel in-flight work
+- retry failed or incomplete work
+
+## Best companion docs
+
+- [Understanding Runs and Results](/getting-started/understanding-runs-and-results)
+- [Check Status](/guides/check-status)
+- [Retry and Cancel Runs](/guides/retry-and-cancel-runs)

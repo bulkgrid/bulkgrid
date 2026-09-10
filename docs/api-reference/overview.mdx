@@ -1,0 +1,31 @@
+---
+title: API reference
+description: Request schemas, permissions, responses, and endpoint details.
+---
+
+Use the endpoint pages in this tab for request fields, query parameters, response schemas, and required permissions. They are generated from the same contract used by the API.
+
+```text
+https://bulkgrid.com/api/v1
+```
+
+The [OpenAPI specification](/api-reference/openapi.json) contains complete paths, including `/api/v1`; do not append the prefix twice.
+
+## Authentication
+
+Use an API key in `x-api-key` or `Authorization: Bearer`. OAuth access tokens use bearer authentication and currently grant MCP and search permissions only. See [Authentication](/getting-started/authentication) and [scopes](/guides/api-key-scopes).
+
+## Generated endpoint groups
+
+- Search indexed content.
+- Create crawl, deep-crawl, and extraction runs.
+- List, inspect, cancel, retry, and delete runs.
+- List results and retrieve content or screenshots.
+
+Source and collection HTTP operations are described in the [Sources](/guides/source-management), [GitHub sources](/guides/github-sources), and [Collections](/guides/collections-and-access) guides. The corresponding SDK operations are included in this generated specification.
+
+## Response handling
+
+Search returns results synchronously. Run creation returns a run to poll. Run deletion returns `202` and completes asynchronously. Content endpoints return text or image bytes rather than a JSON envelope.
+
+Failures use a JSON object with `error` and optional `details`. Treat `403` as an authorization or plan-limit problem, not a transient failure to retry indefinitely.

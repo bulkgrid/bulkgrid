@@ -1,0 +1,47 @@
+---
+title: Check Status
+description: Monitor asynchronous Bulkgrid runs until they complete or fail.
+icon: activity
+---
+
+
+Bulkgrid run-based workflows are asynchronous. Your client should poll run status until the run reaches a terminal state.
+
+## Endpoint
+
+```bash
+curl "$BULKGRID_BASE_URL/api/v1/runs/$RUN_ID" \
+  -H "x-api-key: $BULKGRID_API_KEY"
+```
+
+## Terminal states
+
+Stop polling when status is one of:
+
+- `completed`
+- `failed`
+- `cancelled`
+
+## Recommended polling strategy
+
+A reasonable default:
+
+- first minute: every 2 to 5 seconds
+- larger crawl jobs: back off to 5 to 15 seconds
+- always apply a client-side maximum wait time
+
+## What to inspect while polling
+
+- `status`
+- `queued`
+- `in_progress`
+- `done`
+- `failed`
+- `last_error`
+- `updated_at`
+
+## What to do next
+
+- if `completed`, fetch results
+- if `failed`, inspect error fields and decide whether to retry
+- if `cancelled`, stop work and clean up any dependent jobs

@@ -1,0 +1,83 @@
+---
+title: Crawl
+description: Crawl known URLs and retrieve normalized result content with Bulkgrid.
+icon: bug
+---
+
+Use crawl when you already know the exact URLs you want processed.
+
+## What crawl is good at
+
+Crawl is a strong fit for:
+
+- controlled ingestion of a known page list
+- generating normalized result content
+- link discovery and page inspection
+- feeding retrieval or indexing pipelines
+
+## Request examples
+
+<CodeGroup>
+```bash cURL
+curl "$BULKGRID_BASE_URL/api/v1/crawl" \
+  -H 'Content-Type: application/json' \
+  -H "x-api-key: $BULKGRID_API_KEY" \
+  -d '{
+    "type": "crawl",
+    "urls": [
+      "https://example.com/docs",
+      "https://example.com/pricing"
+    ],
+    "strategy": "lexical",
+    "options": {
+      "formats": ["markdown", "cleanHtml", "links"],
+      "timeout": 30000,
+      "blockAds": true,
+      "useInteractions": true,
+      "waitForImages": false
+    }
+  }'
+```
+
+```js Node.js
+import { BulkgridClient } from '@bulkgrid/sdk';
+
+const client = new BulkgridClient({
+  apiKey: process.env.BULKGRID_API_KEY ?? '',
+  baseUrl: process.env.BULKGRID_BASE_URL ?? 'https://bulkgrid.com',
+});
+
+const run = await client.crawl({
+  urls: ['https://example.com/docs', 'https://example.com/pricing'],
+  strategy: 'lexical',
+  options: {
+    formats: ['markdown', 'cleanHtml', 'links'],
+    timeout: 30000,
+    blockAds: true,
+    useInteractions: true,
+    waitForImages: false,
+  },
+});
+```
+
+</CodeGroup>
+
+## Important options
+
+- `formats`: choose outputs such as `markdown`, `cleanHtml`, `rawHtml`, and `links`
+- `timeout`: page timeout in milliseconds
+- `waitAfterLoad`: extra delay after page load
+- `waitForSelector`: wait for a selector before capture
+- `screenshot`: request screenshot capture
+- `headers`: send additional allowed request headers
+
+## Operational guidance
+
+Ask only for the content formats you need. Wider output sets mean more downstream handling and more room for inconsistent assumptions in client code.
+
+## Workflow
+
+1. create the crawl run
+2. poll the run status
+3. list run results
+4. retrieve the result content your application needs

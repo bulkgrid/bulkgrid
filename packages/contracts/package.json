@@ -1,0 +1,23 @@
+{
+  "name": "@bulkgrid/contracts",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./generated/index.d.ts",
+      "import": "./generated/index.js"
+    },
+    "./openapi": {
+      "types": "./generated/openapi.d.ts",
+      "import": "./generated/openapi.js"
+    },
+    "./schemas": {
+      "types": "./generated/schemas.d.ts",
+      "import": "./generated/schemas.js"
+    }
+  },
+  "dependencies": {
+    "zod": "4.4.3"
+  }
+}

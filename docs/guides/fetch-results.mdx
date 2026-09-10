@@ -1,0 +1,44 @@
+---
+title: Fetch results
+description: List run outputs and retrieve text content or screenshots.
+---
+
+Requires `results:read`. List results after a run completes and inspect per-item errors before consuming content.
+
+```bash
+curl "$BULKGRID_BASE_URL/api/v1/runs/$RUN_ID/results?page=1&limit=20" \
+  -H "x-api-key: $BULKGRID_API_KEY"
+```
+
+The response contains `results`, `page`, `limit`, and `total`. Each result can include URL/title metadata, output references, `extraction_data`, and `error_message`. Not every item produces every format.
+
+## Retrieve text content
+
+```bash
+curl "$BULKGRID_BASE_URL/api/v1/runs/$RUN_ID/results/$RESULT_ID/content?type=markdown" \
+  -H "x-api-key: $BULKGRID_API_KEY"
+```
+
+| `type`               | Response content type |
+| -------------------- | --------------------- |
+| `markdown` (default) | `text/markdown`       |
+| `cleanHtml`          | `text/html`           |
+| `rawHtml`            | `text/html`           |
+| `links`              | `text/plain`          |
+
+The body is text, not a JSON envelope. Add `download=true` to request an attachment. For HTML, inline responses are formatted for display; downloads preserve the stored content.
+
+## Screenshots
+
+```bash
+curl "$BULKGRID_BASE_URL/api/v1/runs/$RUN_ID/results/$RESULT_ID/screenshot" \
+  -H "x-api-key: $BULKGRID_API_KEY"
+```
+
+The default response is JSON with `signedUrl`. Add `download=true` to retrieve the image bytes. Signed URLs are temporary; request a new URL instead of treating one as a permanent public asset URL.
+
+Request screenshot capture when creating the crawl. The screenshot endpoint cannot produce an image for a result that has none.
+
+## Store references
+
+Persist run IDs, result IDs, and the structured data your application needs. Use the authenticated content endpoints when retrieving stored outputs. Handle unavailable formats and deleted results explicitly.

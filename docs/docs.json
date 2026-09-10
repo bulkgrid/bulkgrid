@@ -1,0 +1,138 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "Bulkgrid",
+  "seo": {
+    "metatags": {
+      "canonical": "https://bulkgrid.com/docs"
+    }
+  },
+  "colors": {
+    "primary": "#4F8968",
+    "light": "#4F8968",
+    "dark": "#4F8968"
+  },
+  "icons": {
+    "library": "lucide"
+  },
+  "favicon": "/favicon.ico",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Guides",
+        "groups": [
+          {
+            "group": "Get started",
+            "pages": [
+              "index",
+              "getting-started/quickstart",
+              "getting-started/authentication",
+              "integrations/mcp-server",
+              "getting-started/cli",
+              "getting-started/sdk",
+              "getting-started/playground-quickstart"
+            ]
+          },
+          {
+            "group": "Sources and retrieval",
+            "pages": [
+              "introduction/core-concepts",
+              "guides/source-management",
+              "guides/github-sources",
+              "guides/collections-and-access",
+              "guides/collection-rules",
+              "guides/search",
+              "guides/source-recrawl-and-monitoring",
+              "guides/source-documents-and-changes",
+              "guides/source-discovery"
+            ]
+          },
+          {
+            "group": "Crawl and extract",
+            "pages": ["guides/crawl", "guides/deep-crawl", "guides/extraction", "guides/extract-schema-generation"]
+          },
+          {
+            "group": "Runs and results",
+            "pages": [
+              "getting-started/understanding-runs-and-results",
+              "guides/check-status",
+              "guides/fetch-results",
+              "guides/retry-and-cancel-runs"
+            ]
+          },
+          {
+            "group": "Integrations",
+            "pages": [
+              "integrations/backend-integration",
+              "integrations/rag-and-agent-workflows",
+              "integrations/knowledge-ingestion-workflow",
+              "integrations/customer-facing-search-workflow"
+            ]
+          },
+          {
+            "group": "Access and operations",
+            "pages": [
+              "guides/api-key-scopes",
+              "production/plan-gating-and-limits",
+              "production/usage-metrics",
+              "production/reliability-and-retries",
+              "production/troubleshooting",
+              "production/security-and-data-handling",
+              "production/versioning"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": ["api-reference/overview"]
+          },
+          {
+            "group": "Endpoints",
+            "openapi": "api-reference/openapi.json"
+          }
+        ]
+      }
+    ],
+    "global": {
+      "anchors": [
+        {
+          "anchor": "GitHub",
+          "href": "https://github.com/bulkgrid",
+          "icon": "github"
+        }
+      ]
+    }
+  },
+  "logo": {
+    "href": "https://bulkgrid.com",
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg"
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "Support",
+        "href": "mailto:support@bulkgrid.com"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Dashboard",
+      "href": "https://bulkgrid.com/auth/login"
+    }
+  },
+  "contextual": {
+    "options": ["copy", "view", "chatgpt", "claude", "perplexity", "mcp", "cursor", "vscode"]
+  },
+  "footer": {
+    "socials": {
+      "x": "https://x.com/bulkgrid",
+      "github": "https://github.com/bulkgrid",
+      "linkedin": "https://linkedin.com/company/bulkgrid"
+    }
+  }
+}

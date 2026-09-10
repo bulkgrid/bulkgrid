@@ -1,0 +1,48 @@
+---
+title: Playground Quickstart
+description: Use the Bulkgrid dashboard Playground to test the main workflows before integrating the API.
+---
+
+
+If you want to evaluate Bulkgrid quickly, the Playground is the fastest path.
+
+The current dashboard Playground supports four tabs:
+
+- Crawl
+- Deep Crawl
+- Extract
+- Search
+
+## Why use the Playground first
+
+- you can test workflows before writing client code
+- crawl, deep crawl, and extract redirect into the same run detail flow used elsewhere in the dashboard
+- you can compare search, extraction, and crawl behavior from one screen
+- search lets you test `collectionId`-scoped retrieval without creating a run first
+
+## Suggested evaluation flow
+
+### 1. Run a crawl
+
+Use the `Crawl` tab when you already know the page you want to test.
+
+### 2. Run a deep crawl
+
+Use the `Deep Crawl` tab when you want to start from a URL and explore more of a docs or support section.
+
+### 3. Test extraction
+
+Use the `Extract` tab to validate whether your query and schema design produce useful structured data.
+
+### 4. Test retrieval
+
+Use the `Search` tab to validate whether the ingested content is searchable in the way your application will need. The search form supports the same query, limit, and optional collection scoping model used by the API.
+
+## What to look for
+
+- run creation is fast and predictable
+- run status and completion behavior make sense
+- search results are relevant
+- extraction output is stable enough for your use case
+- crawl results contain the formats you need downstream
+- failures are understandable enough that your workspace can debug them from the run detail screen

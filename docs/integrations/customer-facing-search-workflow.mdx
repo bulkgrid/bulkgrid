@@ -1,0 +1,21 @@
+---
+title: Customer-Facing Search Workflow
+description: Build end-user search and support experiences on top of Bulkgrid.
+---
+
+
+Use Bulkgrid search when you need to power customer-facing documentation search, support assistants, or guided answer experiences.
+
+## Typical architecture
+
+1. your backend sends a search request to Bulkgrid
+2. your backend filters or formats results for the product surface
+3. your UI displays titles, snippets, and links
+4. optional answer-generation logic uses the returned content as grounding
+
+## What to optimize for
+
+- relevant results in the first few positions
+- strong source links back to original content
+- safe fallbacks when no relevant result exists
+- clear distinction between search results and generated answers

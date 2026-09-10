@@ -1,0 +1,115 @@
+---
+title: Search
+description: Build retrieval workflows and search experiences with Bulkgrid search.
+icon: search
+---
+
+Use search when the content is already indexed and you want ranked results immediately.
+
+## When search is the right tool
+
+Search is the right fit when you need:
+
+- low-latency retrieval
+- result ranking for application search
+- grounding material for answer generation
+- collection-scoped access to existing content
+
+## Request examples
+
+<CodeGroup>
+```bash cURL
+curl "$BULKGRID_BASE_URL/api/v1/search" \
+  -H 'Content-Type: application/json' \
+  -H "x-api-key: $BULKGRID_API_KEY" \
+  -d '{
+    "query": "bulkgrid crawl options",
+    "limit": 10,
+    "fullTextWeight": 0.3,
+    "semanticWeight": 0.7,
+    "rrfK": 60
+  }'
+```
+
+```js Node.js
+import { BulkgridApiError, BulkgridClient } from '@bulkgrid/sdk';
+
+const client = new BulkgridClient({
+  apiKey: process.env.BULKGRID_API_KEY ?? '',
+  baseUrl: process.env.BULKGRID_BASE_URL ?? 'https://bulkgrid.com',
+});
+
+try {
+  const data = await client.search({
+    query: 'bulkgrid crawl options',
+    limit: 10,
+    fullTextWeight: 0.3,
+    semanticWeight: 0.7,
+    rrfK: 60,
+  });
+} catch (error) {
+  if (error instanceof BulkgridApiError) {
+    console.error(error.status, error.data);
+  }
+  throw error;
+}
+```
+
+</CodeGroup>
+
+## Ranking controls
+
+Bulkgrid currently exposes three main ranking controls:
+
+- `fullTextWeight`
+- `semanticWeight`
+- `rrfK`
+
+Use the defaults first. Tune only when you have a specific retrieval problem to solve.
+
+### Practical tuning guidance
+
+- increase `fullTextWeight` when exact keyword matches matter more
+- increase `semanticWeight` for natural-language search behavior
+- leave `rrfK` alone unless you are actively testing ranking behavior
+
+## Query expansion
+
+`queryMode` defaults to `auto`. Set it to `none` to disable automatic query expansion. You can provide up to three additional strings in `queries` as query variants. Use the original `query` for the main user request.
+
+## Response handling
+
+Search returns:
+
+- `query`
+- `scoring`
+- `results`
+- `count`
+
+Each result includes identifiers, source URL data, chunk text, ranking values, and metadata.
+
+## Common product patterns
+
+### Search UI
+
+Show:
+
+- `title`
+- `url`
+- trimmed `text_content`
+
+Keep `score` available for debugging and ranking analysis.
+
+### RAG or answer generation
+
+Pass the top results into your answer-generation step with source URLs attached so the model can be grounded and the UI can cite sources.
+
+### Scoped retrieval
+
+Use `collectionId` to narrow retrieval within the collections allowed by the credential. Enforce user access with scoped credentials and backend authorization; a client-supplied filter is not an access grant.
+
+## Failure handling
+
+- `400`: invalid payload or out-of-range values
+- `401`: invalid or missing API key
+- `429`: back off and retry with jitter

@@ -1,0 +1,34 @@
+---
+title: Documents and changes
+description: Browse indexed source documents and inspect changes from a particular run.
+---
+
+Requires `sources:read` and access to the source through workspace ownership or subscription.
+
+## List documents
+
+```bash
+curl "$BULKGRID_BASE_URL/api/v1/sources/$SOURCE_ID/documents?parent=/&offset=0&limit=50" \
+  -H "x-api-key: $BULKGRID_API_KEY"
+```
+
+The response contains `documents`, `parent`, `nextOffset`, `limit`, and `total`. Continue from `nextOffset` until it is `null`. The default limit is `50`, capped at `100`. Use `parent` to browse a source path; `withTotal` is not required.
+
+Documents include source content identifiers and metadata useful for inspecting crawl and indexing state. A source document ID is distinct from a run result ID.
+
+## Browse folders
+
+Use `GET /api/v1/sources/{sourceId}/folders?parent=/` to browse folders under a path. Use folder or URL [collection rules](/guides/collection-rules) to curate content for retrieval.
+
+## Inspect a run's changes
+
+The `runId` query parameter is required:
+
+```bash
+curl "$BULKGRID_BASE_URL/api/v1/sources/$SOURCE_ID/changes?runId=$RUN_ID&kind=changed&offset=0&limit=50" \
+  -H "x-api-key: $BULKGRID_API_KEY"
+```
+
+`kind` accepts `added`, `changed`, or `removed`, and defaults to `changed`. The default limit is `50`, capped at `500`. The response contains `documents`, `total`, `nextOffset`, and `limit`.
+
+Use `GET /api/v1/sources/{sourceId}/runs` with `runs:read` to find the relevant source run. Changes are scoped to the requested run, not an unspecified latest comparison.

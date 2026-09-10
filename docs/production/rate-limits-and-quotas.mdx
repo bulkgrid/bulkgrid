@@ -1,0 +1,37 @@
+---
+title: Rate Limits and Quotas
+description: Understand current usage-sensitive behavior in Bulkgrid and where the product enforces or tracks limits.
+---
+
+
+Bulkgrid has two related but different operational concepts:
+
+- request-level limits such as `429 Rate limited`
+- product usage limits such as pages, conversions, sources, and concurrency
+
+## What is clearly implemented today
+
+The product currently tracks or enforces usage around areas such as:
+
+- sources
+- concurrent runs
+- crawled pages
+- converted files
+- indexed pages per month
+- storage
+- API calls
+
+The API can also return `429` responses.
+
+## Practical client guidance
+
+- keep polling intervals conservative
+- implement backoff and jitter on `429`
+- avoid bursty user-driven traffic directly against the API
+- push long-running work through your backend or job layer
+
+## Where to look next
+
+- [Usage Metrics](/production/usage-metrics)
+- [Plan Gating and Limits](/production/plan-gating-and-limits)
+- [Reliability and Retries](/production/reliability-and-retries)

@@ -1,0 +1,45 @@
+---
+title: Source Discovery
+description: Discover likely source paths and recommended crawl boundaries before creating a source workflow.
+---
+
+Bulkgrid supports source discovery and source path recommendation as first-class product functionality.
+
+## Discover paths
+
+Requires `sources:discover`:
+
+```bash
+curl "$BULKGRID_BASE_URL/api/v1/sources/discover" \
+  -H 'Content-Type: application/json' \
+  -H "x-api-key: $BULKGRID_API_KEY" \
+  -d '{"url":"https://example.com"}'
+```
+
+Discovery inspects candidate paths; it does not create a source subscription or grant access to indexed content.
+
+## What discovery does
+
+The source discovery flow helps you inspect a site before committing to a long-lived source configuration.
+
+It can return:
+
+- the requested URL
+- URL counts
+- discovered paths
+- level summaries
+- warnings
+
+## Recommendation flow
+
+Bulkgrid also supports a recommendation flow that takes a prompt and returns recommended path actions such as:
+
+- `include`
+- `exclude`
+- `neutral`
+
+This is useful when you want help defining a realistic crawl boundary for docs, support, or marketing content.
+
+## Why this matters
+
+Customers usually get better retrieval quality by defining source boundaries before they run broad ingestion jobs.

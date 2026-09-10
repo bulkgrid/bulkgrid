@@ -1,0 +1,67 @@
+---
+title: Collections and Access
+description: Use collections, rules, and API key scope boundaries to keep retrieval controlled and relevant.
+---
+
+Collections are how customers avoid turning Bulkgrid into one large, messy retrieval pool.
+
+## What collections help with
+
+<CardGroup cols={2}>
+  <Card title="Scoped Search" icon="search">
+    Restrict retrieval to the right knowledge set.
+  </Card>
+  <Card title="Audience Separation" icon="layers">
+    Keep public, partner, and internal content apart.
+  </Card>
+  <Card title="Product Boundaries" icon="layers">
+    Separate knowledge by product or domain when relevance depends on it.
+  </Card>
+  <Card title="Agent Safety" icon="shield">
+    Keep each agent or workflow inside an approved retrieval corpus.
+  </Card>
+</CardGroup>
+
+## What collections currently support
+
+The implemented product supports:
+
+- collection creation
+- collection source and page stats
+- adding sources to collections
+- include and exclude rules
+- folder-level and document-level collection curation
+- collection-based API key restrictions
+
+## Create a collection
+
+Requires `collections:write` and a paid plan:
+
+```bash
+curl "$BULKGRID_BASE_URL/api/v1/collections" \
+  -H 'Content-Type: application/json' \
+  -H "x-api-key: $BULKGRID_API_KEY" \
+  -d '{"name":"Product documentation","description":"Content for the support assistant"}'
+```
+
+Use the returned collection ID when adding source, folder, or URL rules. Select this collection when creating an API key or approving an OAuth connection.
+
+## Plan gating
+
+Collection creation is currently gated above the free plan.
+
+## Search behavior
+
+Bulkgrid search supports `collectionId`, which restricts retrieval to a specific collection boundary.
+
+## API operations
+
+Use `GET /api/v1/collections` with `collections:read` to list collections. Create with `POST /api/v1/collections` and `collections:write`; update with `PATCH /api/v1/collections/{collectionId}`. Creation requires a paid plan.
+
+Collection restrictions apply to both API keys and OAuth connections. Manage AI and CLI grants in Connected Apps. A `collectionId` query filter cannot grant access beyond the credential's approved collections.
+
+## Related docs
+
+- [Collection Rules](/guides/collection-rules)
+- [API Key Scopes](/guides/api-key-scopes)
+- [Plan Gating and Limits](/production/plan-gating-and-limits)

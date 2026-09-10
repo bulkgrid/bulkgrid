@@ -1,0 +1,72 @@
+---
+title: First Extraction Request
+description: Create your first extraction run and retrieve structured output.
+---
+
+Use extraction when you want structured output instead of raw crawled content.
+
+## Request
+
+<CodeGroup>
+```bash cURL
+curl "$BULKGRID_BASE_URL/api/v1/extract" \
+  -H 'Content-Type: application/json' \
+  -H "x-api-key: $BULKGRID_API_KEY" \
+  -d '{
+    "type": "extract",
+    "urls": [
+      "https://example.com"
+    ],
+    "query": "Extract the company name and a one sentence product summary",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "companyName": { "type": "string" },
+        "productSummary": { "type": "string" }
+      },
+      "required": ["companyName"]
+    }
+  }'
+```
+
+```js Node.js
+import { BulkgridClient } from '@bulkgrid/sdk';
+
+const client = new BulkgridClient({
+  apiKey: process.env.BULKGRID_API_KEY ?? '',
+  baseUrl: process.env.BULKGRID_BASE_URL ?? 'https://bulkgrid.com',
+});
+
+const run = await client.extract({
+  urls: ['https://example.com'],
+  query: 'Extract the company name and a one sentence product summary',
+  schema: {
+    type: 'object',
+    properties: {
+      companyName: { type: 'string' },
+      productSummary: { type: 'string' },
+    },
+    required: ['companyName'],
+  },
+});
+```
+
+</CodeGroup>
+
+## What happens next
+
+Bulkgrid returns a run object immediately. Extraction is asynchronous.
+
+## Minimal response fields to store
+
+- `id`
+- `status`
+- `type`
+- `urls`
+- `created_at`
+
+## Next step
+
+Poll `GET /api/v1/runs/{runId}` until the run reaches `completed`, then call `GET /api/v1/runs/{runId}/results`.
+
+For the full workflow, read [Extraction](/guides/extraction).

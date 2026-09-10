@@ -1,0 +1,30 @@
+---
+title: RAG and Agent Workflows
+description: Use Bulkgrid as the ingestion and retrieval layer for AI applications and agent systems.
+---
+
+
+Bulkgrid fits naturally into retrieval-augmented generation and agent workflows because it supports both content ingestion and direct retrieval.
+
+## Common pattern
+
+```mermaid
+flowchart LR
+  Sources["Public Sites and Documents"] --> Bulkgrid["Bulkgrid Crawl or Extract"]
+  Bulkgrid --> Index["Customer Retrieval Layer"]
+  User["User Query"] --> App["Application or Agent"]
+  App --> Search["Bulkgrid Search or Customer Index Search"]
+  Search --> App
+  App --> Model["LLM"]
+```
+
+## Where Bulkgrid helps most
+
+- crawling and normalizing source content
+- extracting structured information from pages
+- returning ranked search results for downstream answer generation
+- keeping ingestion logic out of your agent runtime
+
+## Practical recommendation
+
+Keep agent logic focused on reasoning and tool orchestration. Keep content ingestion and retrieval mechanics in Bulkgrid plus your backend layer.

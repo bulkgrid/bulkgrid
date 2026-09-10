@@ -1,0 +1,23 @@
+---
+title: Versioning
+description: Understand API paths, package versions, and asynchronous deletion.
+---
+
+The HTTP API uses the `/api/v1` path prefix. The TypeScript SDK and CLI have their own package versions; updating one does not change the API path.
+
+## Pin and verify dependencies
+
+Pin package versions in your lockfile and test upgrades in a non-production workspace. Check `bulkgrid --version` and `bulkgrid --help` when following CLI instructions.
+
+Use the [generated OpenAPI specification](/api-reference/openapi.json) for request fields and response status codes. Handle documented error responses and ignore additional response fields your application does not use.
+
+## Behavior to account for
+
+- Creating a crawl or extraction run starts asynchronous work.
+- `DELETE /api/v1/runs/{runId}` returns `202` after accepting deletion. Active runs must be cancelled and stopped first.
+- Shared-source subscriptions and workspace-owned sources have different removal semantics.
+- MCP connections use the shared `/api/v1/mcp` URL. Retired installation-specific URLs must be replaced and reauthorized.
+
+API versioning is separate from source freshness, indexing progress, and run history. Check [source status](/guides/source-recrawl-and-monitoring) to determine whether content has been indexed.
+
+A fixed API deprecation window is not specified here. Contact [support](mailto:support@bulkgrid.com) for compatibility requirements before relying on a particular support period.

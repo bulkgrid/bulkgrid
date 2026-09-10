@@ -1,0 +1,69 @@
+---
+title: MCP server
+description: Connect AI apps to your indexed Bulkgrid collections.
+---
+
+The Bulkgrid MCP server gives AI clients tools to inspect accessible collections and search indexed content.
+
+```text
+https://bulkgrid.com/api/v1/mcp
+```
+
+## Connect with OAuth
+
+For Codex, Claude Code, Cursor, or OpenCode, use the [client selector](/index#connect-your-coding-agent) for setup commands and sign-in instructions.
+
+1. Open **Settings → Connected Apps** in Bulkgrid and copy the MCP URL.
+2. Add a remote MCP server in your AI app. Use OAuth with automatic client registration.
+3. Sign in to Bulkgrid in the browser, review the preselected workspace, choose collection access, and approve.
+4. Return to your AI app and enable the Bulkgrid tools.
+
+Use this flow in ChatGPT, Claude, Cursor, or another client that supports remote MCP with OAuth and automatic registration. Client setup screens vary; use the app's remote server or custom connector settings. You do not need to create an OAuth application, supply a callback URL, or copy a client secret.
+
+## Permissions
+
+OAuth grants `mcp:use` and `search:query` for the approved workspace and collections. A tool's collection filter can narrow these permissions but cannot expand them. Your user must remain a member of the workspace.
+
+Each user/client grant stays bound to one workspace, including after reauthorization. Use a separate client connection for another workspace. Manage and revoke access under **Settings → Connected Apps**.
+
+Search returns passages from indexed content; connecting an app does not automatically ingest new sources. Add [sources](/guides/source-management) and check indexing before testing search.
+
+## Connect with an API key
+
+For clients configured through bearer headers, create a key with `mcp:use` and `search:query`:
+
+```text
+Authorization: Bearer bg_live_your_api_key
+```
+
+The server also accepts `x-api-key`. Use one authentication method per connection.
+
+The [CLI](/getting-started/cli) can configure supported clients:
+
+```bash
+export BULKGRID_MCP_URL='https://bulkgrid.com/api/v1/mcp'
+export BULKGRID_API_KEY='bg_live_your_api_key'
+npx -y @bulkgrid/cli init --all
+```
+
+Use `--cursor`, `--vscode`, `--claude`, or `--codex` for one client. Each AI app owns its connection; a separate `bulkgrid login` session does not authenticate the AI app.
+
+## Existing installation URLs
+
+Installation-specific URLs have been retired. Replace them with the shared `/api/v1/mcp` URL and approve access again.
+
+## Troubleshooting
+
+| Symptom                  | Check                                                                                   |
+| ------------------------ | --------------------------------------------------------------------------------------- |
+| OAuth setup cannot start | The client supports automatic OAuth registration and the URL is the shared MCP endpoint |
+| `401`                    | The token is invalid or expired, or the authentication header is missing                |
+| `403`                    | Connection revocation, membership, collection restrictions, or missing scopes           |
+| No results               | Sources are indexed and included in the approved collections                            |
+| GET returns `405`        | MCP requests use POST; opening the endpoint in a browser is not a connection test       |
+
+## Suggested agent instruction
+
+```text
+Use Bulkgrid to search indexed source content and ground answers in the collections available to this connection. Include source URLs when citing retrieved content.
+```
