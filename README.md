@@ -10,7 +10,8 @@ Developer tools for crawling, extracting, and searching web content with [Bulkgr
 | API specification | [openapi/bulkgrid.openapi.json](openapi/bulkgrid.openapi.json) |
 | Documentation | [docs](docs) |
 | Runnable examples | [examples](examples) |
-| Agent skill | [skills/bulkgrid-search](skills/bulkgrid-search/SKILL.md) |
+| Search skill | [skills/bulkgrid-search](skills/bulkgrid-search/SKILL.md) |
+| Source management skill | [skills/bulkgrid-sources](skills/bulkgrid-sources/SKILL.md) |
 
 ## SDK
 
@@ -44,3 +45,4 @@ The SDK and CLI build from source. Their versions describe these source snapshot
 This is a curated export. See [CONTRIBUTING.md](CONTRIBUTING.md) for source ownership and [MAINTAINERS.md](MAINTAINERS.md) for refresh instructions. Contracts are generated from the platform's authoritative API schemas.
 
 Bulkgrid code has no public license grant yet (`UNLICENSED`). Select a license before public release. The existing Mintlify license is preserved in [docs/LICENSE](docs/LICENSE) for the documentation template.
+# bulkgrid
