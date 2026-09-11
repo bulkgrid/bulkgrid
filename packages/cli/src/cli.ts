@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { registerSourceCommands } from './sources.js';
 import { Command } from 'commander';
 
 import { CliAuth } from './auth.js';
@@ -74,6 +75,8 @@ program
       process.exitCode = 1;
     }
   });
+
+registerSourceCommands(program);
 
 program.parseAsync().catch(error => {
   console.error(`bulkgrid: ${error instanceof Error ? error.message : 'Command failed'}`);

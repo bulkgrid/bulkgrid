@@ -1,4 +1,4 @@
-import { $ as crawlRunInputSchema, G as updateSourceSchema, J as searchInputSchema, N as createSourceSchema, O as githubSourceCreateRequestSchema, _ as collectionRulesPatchSchema, et as crawlRunInputUnionSchema, gt as retryRunBodySchema, h as updateChatConversationInputSchema, i as chatInputSchema, l as createChatConversationInputSchema, lt as deepCrawlRunInputSchema, mt as extractRunInputSchema, ot as crawlRunStatusSchema, v as createCollectionSchema } from "./schemas-UkbzA2g_.js";
+import { $ as crawlRunInputSchema, G as updateSourceSchema, J as searchInputSchema, N as createSourceSchema, O as githubSourceCreateRequestSchema, W as sourceDiscoveryAnalysisCreateSchema, _ as collectionRulesPatchSchema, et as crawlRunInputUnionSchema, gt as retryRunBodySchema, h as updateChatConversationInputSchema, i as chatInputSchema, l as createChatConversationInputSchema, lt as deepCrawlRunInputSchema, mt as extractRunInputSchema, ot as crawlRunStatusSchema, v as createCollectionSchema } from "./schemas-UkbzA2g_.js";
 import { z } from "zod";
 //#region packages/api-contract/src/resourceSchemas.ts
 const sourceSchema = z.looseObject({
@@ -396,8 +396,54 @@ const sourceDocumentsPageSchema = z.object({
 	nextOffset: z.number().nullable(),
 	limit: z.number()
 });
+const sourceAnalysisResponseSchema = z.object({
+	url: z.string(),
+	urlCount: z.number(),
+	paths: z.array(z.object({
+		path: z.string(),
+		depth: z.number(),
+		count: z.number(),
+		parent: z.string().nullable(),
+		name: z.string()
+	})),
+	levelSummaries: z.array(z.object({
+		parent: z.string(),
+		total: z.number(),
+		shown: z.number()
+	})),
+	warning: z.object({
+		type: z.literal("sitemap_incomplete"),
+		message: z.string()
+	}).nullable()
+}).extend({
+	id: z.uuid(),
+	runId: z.uuid().nullable(),
+	sourceId: z.uuid().nullable(),
+	status: z.enum([
+		"crawling",
+		"analyzing",
+		"completed",
+		"partial",
+		"failed"
+	]),
+	urlCount: z.number().nullable(),
+	scopeUrls: z.array(z.string()),
+	error: z.string().nullable(),
+	analyzedAt: z.string().nullable()
+});
 const apiContract = {
 	sources: {
+		analyze: {
+			method: "POST",
+			path: "/api/v1/sources/discover/analyses",
+			requestSchema: sourceDiscoveryAnalysisCreateSchema,
+			responseSchema: sourceAnalysisResponseSchema
+		},
+		analysis: {
+			method: "GET",
+			path: "/api/v1/sources/discover/analyses/{analysisId}",
+			responseSchema: sourceAnalysisResponseSchema
+		},
 		documents: {
 			method: "GET",
 			path: "/api/v1/sources/{sourceId}/documents",
@@ -649,4 +695,4 @@ const apiContract = {
 	}
 };
 //#endregion
-export { collectionSchema as A, searchResponseSchema as C, collectionListItemSchema as D, updateChatConversationResponseSchema as E, sourceStatusSchema as F, updateCollectionRequestSchema as I, sourceListItemSchema as M, sourceSchema as N, collectionRuleResponseSchema as O, sourceSearchResultSchema as P, sdkSuccessResponseSchema as S, sourceDocumentSchema as T, listRunResultsResponseSchema as _, chatConversationDetailResponseSchema as a, resultContentTypeSchema as b, chatConversationsListResponseSchema as c, crawlRunSchema as d, crawlRunStatisticsSchema as f, listRunResultsQuerySchema as g, getRunResponseSchema as h, chatConversationCitationSchema as i, sourceDetailSchema as j, collectionRulesResponseSchema as k, chatResponseSchema as l, getRunQuerySchema as m, apiErrorResponseSchema as n, chatConversationMessageSchema as o, crawlRunTypeSchema as p, chatCitationSchema as r, chatConversationSchema as s, apiContract as t, crawlResultSchema as u, listRunsQuerySchema as v, searchResultSchema as w, screenshotResponseSchema as x, listRunsResponseSchema as y };
+export { collectionRulesResponseSchema as A, searchResponseSchema as C, updateChatConversationResponseSchema as D, sourceDocumentSchema as E, sourceSearchResultSchema as F, sourceStatusSchema as I, updateCollectionRequestSchema as L, sourceDetailSchema as M, sourceListItemSchema as N, collectionListItemSchema as O, sourceSchema as P, sdkSuccessResponseSchema as S, sourceAnalysisResponseSchema as T, listRunResultsResponseSchema as _, chatConversationDetailResponseSchema as a, resultContentTypeSchema as b, chatConversationsListResponseSchema as c, crawlRunSchema as d, crawlRunStatisticsSchema as f, listRunResultsQuerySchema as g, getRunResponseSchema as h, chatConversationCitationSchema as i, collectionSchema as j, collectionRuleResponseSchema as k, chatResponseSchema as l, getRunQuerySchema as m, apiErrorResponseSchema as n, chatConversationMessageSchema as o, crawlRunTypeSchema as p, chatCitationSchema as r, chatConversationSchema as s, apiContract as t, crawlResultSchema as u, listRunsQuerySchema as v, searchResultSchema as w, screenshotResponseSchema as x, listRunsResponseSchema as y };

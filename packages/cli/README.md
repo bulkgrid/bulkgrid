@@ -59,3 +59,15 @@ const accessToken = await new CliAuth().getAccessToken();
 ```
 
 `getAccessToken()` refreshes the credentials if necessary and checks the connection is still active before returning a token.
+
+## Manage sources with an API key
+
+Source commands require `BULKGRID_API_KEY`, independent of CLI OAuth login. Set `BULKGRID_URL` or use `--url` for another deployment.
+
+```sh
+bulkgrid sources --help
+bulkgrid sources find https://example.com
+bulkgrid sources status <sourceId>
+```
+
+`analyze` starts deeper analysis and may create a crawl run. `add --input '<json>'` creates/subscribes using explicit source configuration. `recrawl` starts a manual refresh. `collections`, `rules`, and `include` inspect and update collection access. All output JSON; none poll or retry mutations automatically. Use the least API-key scopes needed for the chosen operation. See the source-management skill and CLI documentation for the full workflow and permission mapping.

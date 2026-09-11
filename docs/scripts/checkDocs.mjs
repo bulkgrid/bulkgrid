@@ -8,7 +8,6 @@ import {
   createSourceSchema,
   githubSourceCreateRequestSchema,
   createCollectionSchema,
-  sourceDiscoverRequestSchema,
   extractSchemaGenerationRequestSchema,
 } from '@bulkgrid/contracts/schemas';
 
@@ -23,7 +22,7 @@ const schemas = new Map([
   ['/api/v1/deep-crawl', apiContract.deepCrawl.requestSchema],
   ['/api/v1/sources', createSourceSchema],
   ['/api/v1/collections', createCollectionSchema],
-  ['/api/v1/sources/discover', sourceDiscoverRequestSchema],
+  ['/api/v1/sources/discover/analyses', apiContract.sources.analyze.requestSchema],
   ['/api/v1/extract/schema', extractSchemaGenerationRequestSchema],
   ['/api/v1/sources/github', githubSourceCreateRequestSchema],
 ]);

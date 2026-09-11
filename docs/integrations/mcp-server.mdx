@@ -67,3 +67,21 @@ Installation-specific URLs have been retired. Replace them with the shared `/api
 ```text
 Use Bulkgrid to search indexed source content and ground answers in the collections available to this connection. Include source URLs when citing retrieved content.
 ```
+
+## Source management through scoped API keys
+
+The source-management tools in the repository build are available only to API-key connections, with `mcp:use` plus the operation scopes below. OAuth remains search-only. Tool availability depends on the deployed server version and the key's scopes; an agent should inspect its connected tools.
+
+| Tools                                             | Required operation scopes        |
+| ------------------------------------------------- | -------------------------------- |
+| `find_sources`, `get_source_status`               | `sources:read`                   |
+| `get_source_analysis`                             | `sources:discover`               |
+| `analyze_source`                                  | `sources:discover`, `runs:write` |
+| `add_source`                                      | `sources:write`                  |
+| `recrawl_source`                                  | `sources:write`, `runs:write`    |
+| `list_source_collections`, `get_collection_rules` | `collections:read`               |
+| `add_source_to_collection`                        | `collections:write`              |
+
+Use `analyze_source` to start asynchronous analysis, then `get_source_analysis` to read candidate paths, URL counts and warnings. Analysis can create a crawl run and consume resources. Adding a source can establish ongoing refresh; including it in a collection grants retrieval over its eligible documents. The API enforces workspace, collection and plan restrictions. A key's technical permissions do not replace the user's instructions about permitted sources, visibility, scope and budgets.
+
+Success payloads are exposed as `structuredContent.result`; API failures are tool errors with status and error details. Check source status before describing content as searchable. The `bulkgrid-sources` skill in the developer repository guides this workflow; `bulkgrid-search` handles answering from indexed content.

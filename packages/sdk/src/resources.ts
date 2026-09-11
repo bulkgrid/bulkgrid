@@ -2,6 +2,13 @@ import { z } from 'zod';
 import { apiContract } from '@bulkgrid/contracts';
 import type { RequestOptions } from './index.js';
 
+export const sourceInputSchemas = {
+  analyze: apiContract.sources.analyze.requestSchema,
+  create: apiContract.sources.create.requestSchema,
+};
+
+export type AnalyzeSourceInput = z.input<typeof apiContract.sources.analyze.requestSchema>;
+export type SourceAnalysisResponse = z.output<typeof apiContract.sources.analysis.responseSchema>;
 export type SourceDocumentsQuery = z.input<typeof apiContract.sources.documents.querySchema>;
 export type SourceChangesQuery = z.input<typeof apiContract.sources.changes.querySchema>;
 export type SourceDocumentsResponse = z.output<typeof apiContract.sources.documents.responseSchema>;
@@ -63,6 +70,10 @@ export function createResourceClients(request: ResourceRequest) {
   const collections = apiContract.collections;
   return {
     sources: {
+      analyze: (input: AnalyzeSourceInput, options?: RequestOptions) =>
+        call(sources.analyze, { ...options, body: sources.analyze.requestSchema.parse(input) }),
+      getAnalysis: (analysisId: string, options?: RequestOptions) =>
+        call(sources.analysis, { ...options, pathParams: { analysisId } }),
       documents: (sourceId: string, query?: SourceDocumentsQuery, options?: RequestOptions) =>
         call(sources.documents, { ...options, pathParams: { sourceId }, query }),
       changes: (sourceId: string, query: SourceChangesQuery, options?: RequestOptions) =>

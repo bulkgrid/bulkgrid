@@ -1,4 +1,4 @@
-import { n as apiErrorResponseSchema, t as apiContract } from "./publicApi-CED13KN2.js";
+import { n as apiErrorResponseSchema, t as apiContract } from "./publicApi-C_rt-6-Z.js";
 import { z } from "zod";
 //#region packages/api-contract/src/openapi.ts
 const DEFAULT_JSON_CONTENT_TYPE = "application/json";
@@ -110,6 +110,25 @@ const endpointScopes = /* @__PURE__ */ new Map([
 	[apiContract.runs.resultScreenshot, "results:read"]
 ]);
 const resourceEndpoints = [
+	{
+		endpoint: apiContract.sources.analyze,
+		scope: "sources:discover and runs:write",
+		metadata: {
+			operationId: "analyzeSource",
+			summary: "Start source analysis (may create a crawl run)",
+			tag: "Sources",
+			successStatus: "202"
+		}
+	},
+	{
+		endpoint: apiContract.sources.analysis,
+		scope: "sources:discover",
+		metadata: {
+			operationId: "getSourceAnalysis",
+			summary: "Read source analysis progress",
+			tag: "Sources"
+		}
+	},
 	{
 		endpoint: apiContract.sources.list,
 		metadata: {

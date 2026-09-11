@@ -2,6 +2,7 @@ import { apiContract as internalApiContract } from '@bulkgrid/contracts';
 import { z } from 'zod';
 import { createResourceClients } from './resources.js';
 export type * from './resources.js';
+export { sourceInputSchemas } from './resources.js';
 export type { Source, SourceDocument, SourceSearchResult, SourceStatus, Collection, CollectionRule } from '@bulkgrid/contracts';
 
 export const apiErrorResponseSchema = z.object({
@@ -13,6 +14,8 @@ export type ApiErrorResponse = z.infer<typeof apiErrorResponseSchema>;
 
 export const apiContract = {
   sources: {
+    analyze: { method: internalApiContract.sources.analyze.method, path: internalApiContract.sources.analyze.path },
+    getAnalysis: { method: internalApiContract.sources.analysis.method, path: internalApiContract.sources.analysis.path },
     list: { method: internalApiContract.sources.list.method, path: internalApiContract.sources.list.path },
     search: { method: internalApiContract.sources.search.method, path: internalApiContract.sources.search.path },
     create: { method: internalApiContract.sources.create.method, path: internalApiContract.sources.create.path },

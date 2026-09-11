@@ -11,7 +11,7 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "npm run build --workspaces --if-present",
+    "build": "npm run build -w @bulkgrid/sdk && npm run build -w @bulkgrid/cli",
     "test": "vitest run",
     "check:types": "npm run check-types --workspaces --if-present",
     "lint": "eslint packages/sdk/src packages/cli/src",

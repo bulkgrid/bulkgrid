@@ -3,7 +3,7 @@ title: CLI
 description: Install the Bulkgrid CLI, sign in, and configure AI clients.
 ---
 
-The Bulkgrid CLI supports browser login, connection status, logout, and MCP client configuration. Use the [API](/getting-started/quickstart) or [SDK](/getting-started/sdk) to submit crawl and extraction jobs; the CLI does not provide crawl or search subcommands.
+The Bulkgrid CLI supports browser login, connection status, logout, MCP client configuration, and API-key source management. Use the [API](/getting-started/quickstart) or [SDK](/getting-started/sdk) to submit crawl and extraction jobs; the CLI does not provide crawl or search subcommands.
 
 ## Install
 
@@ -86,3 +86,33 @@ bulkgrid logout --local
 ```
 
 This option removes local tokens only. If a command reports a leftover authentication lock after a process stopped, ensure no authentication command is running before removing the specific lock file identified by the error.
+
+## Source management with an API key
+
+The repository build includes `sources` commands. Check `bulkgrid sources --help` for availability in your installed release. These commands require `BULKGRID_API_KEY`; they do not use the saved OAuth login. Set `BULKGRID_URL` or pass `--url` to select another deployment. Remote deployments require HTTPS.
+
+```bash
+bulkgrid sources find https://example.com
+bulkgrid sources collections
+```
+
+`find` requires `sources:read`; `collections` requires `collections:read`. For source-size inspection, explicitly start asynchronous analysis using `sources analyze <url>`, then check it with `sources analysis-status <analysisId>`. Analysis may consume resources; its URL counts and warnings are not a storage or credit quote.
+
+After choosing and authorizing the ingestion configuration:
+
+```bash
+bulkgrid sources add --input '{"type":"domain","identifier":"https://example.com","visibility":"private","source_mode":"discover","crawl_config":{"includePaths":["/docs"],"maxPages":100,"maxDepth":3},"crawl_interval":"weekly"}'
+```
+
+`add` requires `sources:write` and may initiate ongoing ingestion. Visibility and refresh policy matter; the example requests a private source with weekly refresh. Plan limits still apply.
+
+| Command                                     | Purpose                                       | Additional scopes                |
+| ------------------------------------------- | --------------------------------------------- | -------------------------------- |
+| `sources analyze <url>`                     | Start deeper analysis; may create a crawl run | `sources:discover`, `runs:write` |
+| `sources analysis-status <analysisId>`      | Read analysis progress                        | `sources:discover`               |
+| `sources status <sourceId>`                 | Read crawl/indexing status and size           | `sources:read`                   |
+| `sources recrawl <sourceId>`                | Request a manual refresh                      | `sources:write`, `runs:write`    |
+| `sources rules <collectionId>`              | Inspect collection access                     | `collections:read`               |
+| `sources include <sourceId> <collectionId>` | Include the whole source in a collection      | `collections:write`              |
+
+Commands output JSON and do not poll automatically. Save source, analysis, and run IDs. Do not blindly retry a timed-out mutation: it may already have succeeded. Source creation and collection inclusion are separate operations, and source creation alone does not mean content is searchable.

@@ -164,3 +164,20 @@ try {
 ```
 
 Use `RequestOptions.signal` to cancel requests. The SDK does not automatically retry requests or poll runs. See [Retries](/production/reliability-and-retries) before retrying a create request that may already have succeeded.
+
+## Analyze a source before ingestion
+
+Source analysis is asynchronous and may start a resource-consuming crawl. It requires `sources:discover` and `runs:write`; start it only within the approved source scope. These methods are available in the repository build; verify your installed package includes them.
+
+```js
+const analysis = await client.sources.analyze({ url: 'https://example.com' });
+console.log(analysis.id, analysis.runId, analysis.status);
+
+// Check later using the analysis ID, not the crawl run ID.
+const progress = await client.sources.getAnalysis(analysis.id);
+console.log(progress.status, progress.urlCount, progress.paths, progress.warning);
+```
+
+Reading analysis requires `sources:discover`. Counts describe estimated coverage, not guaranteed storage or credits. Treat `partial` results and warnings as incomplete evidence. The SDK does not poll indefinitely or create a source subscription automatically.
+
+After approved creation, use `sources.status(sourceId)` to distinguish source registration from indexing readiness. Use `collections.rules(collectionId)` before adding whole-source access with `collections.addSource({ sourceId, collectionId })`. A failed collection update does not undo source creation; preserve the returned source ID rather than repeating creation.

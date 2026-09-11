@@ -1,45 +1,38 @@
 ---
-title: Source Discovery
-description: Discover likely source paths and recommended crawl boundaries before creating a source workflow.
+title: Source Analysis
+description: Analyze source coverage asynchronously before choosing ingestion boundaries.
 ---
 
-Bulkgrid supports source discovery and source path recommendation as first-class product functionality.
+Source analysis inspects candidate paths and estimates URL coverage. It can start a crawl run and consume resources; authorize its scope before starting it. The standalone synchronous discovery endpoint has been removed.
 
-## Discover paths
+## Start analysis
 
-Requires `sources:discover`:
+Requires `sources:discover` and `runs:write`:
 
 ```bash
-curl "$BULKGRID_BASE_URL/api/v1/sources/discover" \
+curl "$BULKGRID_BASE_URL/api/v1/sources/discover/analyses" \
   -H 'Content-Type: application/json' \
   -H "x-api-key: $BULKGRID_API_KEY" \
   -d '{"url":"https://example.com"}'
 ```
 
-Discovery inspects candidate paths; it does not create a source subscription or grant access to indexed content.
+Save the returned analysis `id` and any `runId`. Analysis does not create a source subscription. The analysis endpoints retain their existing paths under `/sources/discover/analyses`.
 
-## What discovery does
+## Read progress and results
 
-The source discovery flow helps you inspect a site before committing to a long-lived source configuration.
+Requires `sources:discover`:
 
-It can return:
+```bash
+curl "$BULKGRID_BASE_URL/api/v1/sources/discover/analyses/$ANALYSIS_ID" \
+  -H "x-api-key: $BULKGRID_API_KEY"
+```
 
-- the requested URL
-- URL counts
-- discovered paths
-- level summaries
-- warnings
+States are `crawling`, `analyzing`, `completed`, `partial`, and `failed`. Results include the URL, estimated URL count, discovered paths, level summaries, warnings, and errors. Counts may be unavailable while work is in progress. `partial` indicates incomplete coverage; estimates are not guaranteed storage or credit quotes.
 
-## Recommendation flow
+Use bounded polling and preserve the ID if the wait expires. Do not blindly resubmit a start request after a timeout: work may already have begun.
 
-Bulkgrid also supports a recommendation flow that takes a prompt and returns recommended path actions such as:
+## Choose ingestion boundaries
 
-- `include`
-- `exclude`
-- `neutral`
+Use the analysis to select relevant paths or pages before creating a source. The path recommendation flow can help choose include/exclude rules; it is distinct from starting analysis and from source creation.
 
-This is useful when you want help defining a realistic crawl boundary for docs, support, or marketing content.
-
-## Why this matters
-
-Customers usually get better retrieval quality by defining source boundaries before they run broad ingestion jobs.
+See [SDK](/getting-started/sdk), [CLI](/getting-started/cli), and [Sources](/guides/source-management) for the rest of the workflow.

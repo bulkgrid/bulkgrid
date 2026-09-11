@@ -614,8 +614,120 @@ declare const sourceDocumentSchema: z.ZodObject<{
   }, z.core.$strip>>;
 }, z.core.$loose>;
 type SourceDocument = z.output<typeof sourceDocumentSchema>;
+declare const sourceAnalysisResponseSchema: z.ZodObject<{
+  url: z.ZodString;
+  paths: z.ZodArray<z.ZodObject<{
+    path: z.ZodString;
+    depth: z.ZodNumber;
+    count: z.ZodNumber;
+    parent: z.ZodNullable<z.ZodString>;
+    name: z.ZodString;
+  }, z.core.$strip>>;
+  levelSummaries: z.ZodArray<z.ZodObject<{
+    parent: z.ZodString;
+    total: z.ZodNumber;
+    shown: z.ZodNumber;
+  }, z.core.$strip>>;
+  warning: z.ZodNullable<z.ZodObject<{
+    type: z.ZodLiteral<"sitemap_incomplete">;
+    message: z.ZodString;
+  }, z.core.$strip>>;
+  id: z.ZodUUID;
+  runId: z.ZodNullable<z.ZodUUID>;
+  sourceId: z.ZodNullable<z.ZodUUID>;
+  status: z.ZodEnum<{
+    failed: "failed";
+    completed: "completed";
+    crawling: "crawling";
+    analyzing: "analyzing";
+    partial: "partial";
+  }>;
+  urlCount: z.ZodNullable<z.ZodNumber>;
+  scopeUrls: z.ZodArray<z.ZodString>;
+  error: z.ZodNullable<z.ZodString>;
+  analyzedAt: z.ZodNullable<z.ZodString>;
+}, z.core.$strip>;
+type SourceAnalysisResponse = z.output<typeof sourceAnalysisResponseSchema>;
 declare const apiContract: {
   readonly sources: {
+    readonly analyze: {
+      readonly method: "POST";
+      readonly path: "/api/v1/sources/discover/analyses";
+      readonly requestSchema: z.ZodObject<{
+        url: z.ZodString;
+        sourceId: z.ZodOptional<z.ZodUUID>;
+      }, z.core.$strip>;
+      readonly responseSchema: z.ZodObject<{
+        url: z.ZodString;
+        paths: z.ZodArray<z.ZodObject<{
+          path: z.ZodString;
+          depth: z.ZodNumber;
+          count: z.ZodNumber;
+          parent: z.ZodNullable<z.ZodString>;
+          name: z.ZodString;
+        }, z.core.$strip>>;
+        levelSummaries: z.ZodArray<z.ZodObject<{
+          parent: z.ZodString;
+          total: z.ZodNumber;
+          shown: z.ZodNumber;
+        }, z.core.$strip>>;
+        warning: z.ZodNullable<z.ZodObject<{
+          type: z.ZodLiteral<"sitemap_incomplete">;
+          message: z.ZodString;
+        }, z.core.$strip>>;
+        id: z.ZodUUID;
+        runId: z.ZodNullable<z.ZodUUID>;
+        sourceId: z.ZodNullable<z.ZodUUID>;
+        status: z.ZodEnum<{
+          failed: "failed";
+          completed: "completed";
+          crawling: "crawling";
+          analyzing: "analyzing";
+          partial: "partial";
+        }>;
+        urlCount: z.ZodNullable<z.ZodNumber>;
+        scopeUrls: z.ZodArray<z.ZodString>;
+        error: z.ZodNullable<z.ZodString>;
+        analyzedAt: z.ZodNullable<z.ZodString>;
+      }, z.core.$strip>;
+    };
+    readonly analysis: {
+      readonly method: "GET";
+      readonly path: "/api/v1/sources/discover/analyses/{analysisId}";
+      readonly responseSchema: z.ZodObject<{
+        url: z.ZodString;
+        paths: z.ZodArray<z.ZodObject<{
+          path: z.ZodString;
+          depth: z.ZodNumber;
+          count: z.ZodNumber;
+          parent: z.ZodNullable<z.ZodString>;
+          name: z.ZodString;
+        }, z.core.$strip>>;
+        levelSummaries: z.ZodArray<z.ZodObject<{
+          parent: z.ZodString;
+          total: z.ZodNumber;
+          shown: z.ZodNumber;
+        }, z.core.$strip>>;
+        warning: z.ZodNullable<z.ZodObject<{
+          type: z.ZodLiteral<"sitemap_incomplete">;
+          message: z.ZodString;
+        }, z.core.$strip>>;
+        id: z.ZodUUID;
+        runId: z.ZodNullable<z.ZodUUID>;
+        sourceId: z.ZodNullable<z.ZodUUID>;
+        status: z.ZodEnum<{
+          failed: "failed";
+          completed: "completed";
+          crawling: "crawling";
+          analyzing: "analyzing";
+          partial: "partial";
+        }>;
+        urlCount: z.ZodNullable<z.ZodNumber>;
+        scopeUrls: z.ZodArray<z.ZodString>;
+        error: z.ZodNullable<z.ZodString>;
+        analyzedAt: z.ZodNullable<z.ZodString>;
+      }, z.core.$strip>;
+    };
     readonly documents: {
       readonly method: "GET";
       readonly path: "/api/v1/sources/{sourceId}/documents";
@@ -2835,4 +2947,4 @@ type SourceStatus = z.infer<typeof sourceStatusSchema>;
 type Collection = z.infer<typeof collectionSchema>;
 type CollectionRule = z.infer<typeof collectionRuleResponseSchema>;
 //#endregion
-export { ApiContract, ApiErrorResponse, ChatCitation, ChatConversation, ChatConversationCitation, ChatConversationDetailResponse, ChatConversationMessage, ChatConversationsListResponse, ChatResponse, Collection, CollectionRule, CrawlResult, CrawlRun, CrawlRunStatistics, CrawlRunType, GetRunQuery, GetRunResponse, ListRunResultsQuery, ListRunResultsResponse, ListRunsQuery, ListRunsResponse, ResultContentType, ScreenshotResponse, SdkSuccessResponse, SearchResponse, SearchResult, Source, SourceDocument, SourceSearchResult, SourceStatus, UpdateChatConversationResponse, apiContract, apiErrorResponseSchema, chatCitationSchema, chatConversationCitationSchema, chatConversationDetailResponseSchema, chatConversationMessageSchema, chatConversationSchema, chatConversationsListResponseSchema, chatResponseSchema, collectionListItemSchema, collectionRuleResponseSchema, collectionRulesResponseSchema, collectionSchema, crawlResultSchema, crawlRunSchema, crawlRunStatisticsSchema, crawlRunTypeSchema, getRunQuerySchema, getRunResponseSchema, listRunResultsQuerySchema, listRunResultsResponseSchema, listRunsQuerySchema, listRunsResponseSchema, resultContentTypeSchema, screenshotResponseSchema, sdkSuccessResponseSchema, searchResponseSchema, searchResultSchema, sourceDetailSchema, sourceDocumentSchema, sourceListItemSchema, sourceSchema, sourceSearchResultSchema, sourceStatusSchema, updateChatConversationResponseSchema, updateCollectionRequestSchema };
+export { ApiContract, ApiErrorResponse, ChatCitation, ChatConversation, ChatConversationCitation, ChatConversationDetailResponse, ChatConversationMessage, ChatConversationsListResponse, ChatResponse, Collection, CollectionRule, CrawlResult, CrawlRun, CrawlRunStatistics, CrawlRunType, GetRunQuery, GetRunResponse, ListRunResultsQuery, ListRunResultsResponse, ListRunsQuery, ListRunsResponse, ResultContentType, ScreenshotResponse, SdkSuccessResponse, SearchResponse, SearchResult, Source, SourceAnalysisResponse, SourceDocument, SourceSearchResult, SourceStatus, UpdateChatConversationResponse, apiContract, apiErrorResponseSchema, chatCitationSchema, chatConversationCitationSchema, chatConversationDetailResponseSchema, chatConversationMessageSchema, chatConversationSchema, chatConversationsListResponseSchema, chatResponseSchema, collectionListItemSchema, collectionRuleResponseSchema, collectionRulesResponseSchema, collectionSchema, crawlResultSchema, crawlRunSchema, crawlRunStatisticsSchema, crawlRunTypeSchema, getRunQuerySchema, getRunResponseSchema, listRunResultsQuerySchema, listRunResultsResponseSchema, listRunsQuerySchema, listRunsResponseSchema, resultContentTypeSchema, screenshotResponseSchema, sdkSuccessResponseSchema, searchResponseSchema, searchResultSchema, sourceAnalysisResponseSchema, sourceDetailSchema, sourceDocumentSchema, sourceListItemSchema, sourceSchema, sourceSearchResultSchema, sourceStatusSchema, updateChatConversationResponseSchema, updateCollectionRequestSchema };
