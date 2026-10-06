@@ -85,7 +85,9 @@ OAuth connections have search access. Source management requires an API key with
 
 ### Use the TypeScript SDK
 
-Requires Node.js 22 or newer. Create an API key in [Settings → API Keys](https://bulkgrid.com/dashboard/settings/api-keys) with `search:query` and access to the relevant content.
+Requires Node.js 22 or newer and Python 3.9 or newer for plugin archive tests.
+
+Repository tooling uses TypeScript through `tsx`. The root check includes strict type checks and Vitest tests. Create an API key in [Settings → API Keys](https://bulkgrid.com/dashboard/settings/api-keys) with `search:query` and access to the relevant content.
 
 ```bash
 npm install @bulkgrid/sdk
@@ -133,6 +135,8 @@ Browser login creates a separate CLI OAuth connection. It does not authorize sou
 
 ## Agent skills
 
+The installable retrieval plugin combines search guidance with a client-managed MCP connection. See [agent plugin installation](AGENT_PLUGINS.md) for package paths, authorization, and pending client acceptance. Generated portable and Claude bundles share the canonical search skill below.
+
 This repository includes instructions agents can use alongside a connected Bulkgrid MCP server:
 
 | Skill                                                | Purpose                                                                                                      |
@@ -157,7 +161,9 @@ These tools connect to the hosted Bulkgrid service. The MCP server implementatio
 
 ## Development and contributions
 
-Requires Node.js 22 or newer.
+Requires Node.js 22 or newer and Python 3.9 or newer for plugin archive tests.
+
+Repository tooling uses TypeScript through `tsx`. The root check includes strict type checks and Vitest tests.
 
 ```bash
 npm ci
@@ -169,7 +175,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidance and [MAINTAINER
 
 ## License
 
-Bulkgrid code is currently `UNLICENSED`; no public license grant has been added. The documentation template's existing license is preserved in [docs/LICENSE](docs/LICENSE).
+Plugin resources and shared skills use Apache-2.0. See [agent plugin license boundaries](AGENT_PLUGINS.md#license-boundaries) for coverage and asset notices. SDK and CLI package metadata remain `UNLICENSED`. The documentation template's existing license is preserved in [docs/LICENSE](docs/LICENSE).
 
 ## Links
 

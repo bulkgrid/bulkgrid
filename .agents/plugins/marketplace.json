@@ -1,0 +1,12 @@
+{
+  "name": "bulkgrid",
+  "interface": { "displayName": "Bulkgrid" },
+  "plugins": [
+    {
+      "name": "bulkgrid",
+      "source": { "source": "local", "path": "./plugins/bulkgrid" },
+      "policy": { "installation": "AVAILABLE", "authentication": "ON_INSTALL" },
+      "category": "Productivity"
+    }
+  ]
+}

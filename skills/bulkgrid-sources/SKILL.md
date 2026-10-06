@@ -1,6 +1,7 @@
 ---
 name: bulkgrid-sources
 description: Analyze, inspect, and add sources to Bulkgrid, assess ingestion scope, organize collection access, and track indexing readiness. Use when the user asks to prepare or manage content for retrieval. Requires explicitly scoped API-key access for management; OAuth connections remain search-only.
+license: Apache-2.0
 ---
 
 # Prepare sources for retrieval
