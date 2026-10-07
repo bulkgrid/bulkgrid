@@ -17,7 +17,7 @@
     "lint": "eslint packages/sdk/src packages/cli/src scripts docs/scripts vitest.config.ts",
     "docs:check": "tsx docs/scripts/checkDocs.ts",
     "openapi:generate": "tsx scripts/generateOpenApi.ts",
-    "check": "npm run check:types && npm run plugins:check && npm run build && npm test && npm run lint && npm run docs:check && npm run export:check",
+    "check": "npm run check:types:tooling && npm run plugins:check && npm run build && npm run check:types && npm test && npm run lint && npm run docs:check && npm run export:check",
     "export:check": "tsx scripts/checkExport.ts",
     "export:apply": "tsx scripts/applyExport.ts",
     "plugins:build": "tsx scripts/plugins/build.ts",
