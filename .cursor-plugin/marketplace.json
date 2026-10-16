@@ -1,0 +1,12 @@
+{
+  "name": "bulkgrid",
+  "owner": { "name": "Bulkgrid AB" },
+  "plugins": [
+    {
+      "name": "bulkgrid",
+      "source": "./plugins/bulkgrid",
+      "description": "Search indexed Bulkgrid sources and read documents with citations.",
+      "license": "Apache-2.0"
+    }
+  ]
+}

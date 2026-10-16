@@ -1,0 +1,100 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "bulkgrid",
+  "version": "0.1.1",
+  "description": "Search indexed Bulkgrid sources and collections, read document passages, and answer with source citations.",
+  "author": {
+    "name": "Bulkgrid AB"
+  },
+  "homepage": "https://bulkgrid.com",
+  "repository": "https://github.com/bulkgrid/bulkgrid",
+  "license": "Apache-2.0",
+  "keywords": [
+    "bulkgrid",
+    "search",
+    "retrieval",
+    "mcp"
+  ],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Bulkgrid",
+        "shortDescription": "Search your trusted sources",
+        "longDescription": "Connect your Bulkgrid account to discover accessible indexed sources and collections, search relevant passages, and read documents for more context. Get answers grounded in retrieved evidence with links to the original sources. Access follows the workspace and collection permissions approved during sign-in. This plugin searches existing indexed content; it does not add sources, trigger syncs, or fetch live webpages. Search is subject to your Bulkgrid account limits. A Bulkgrid account is required. Page processing and source refresh are managed in Bulkgrid; this plugin provides search and retrieval only.",
+        "websiteURL": "https://bulkgrid.com",
+        "logo": "./assets/icon.png",
+        "composerIcon": "./assets/icon.png",
+        "defaultPrompt": [
+          "What sources can I search in Bulkgrid?",
+          "Search my Bulkgrid sources and answer with citations.",
+          "Help me explore my Bulkgrid collections."
+        ],
+        "developerName": "Bulkgrid AB",
+        "supportURL": "https://bulkgrid.com/support",
+        "privacyPolicyURL": "https://bulkgrid.com/legal/privacy",
+        "termsOfServiceURL": "https://bulkgrid.com/legal/terms",
+        "capabilities": [
+          "List sources",
+          "List collections",
+          "Search indexed content",
+          "Read document passages",
+          "Inspect search capabilities"
+        ]
+      },
+      "review": {
+        "test_cases": {
+          "positive": [
+            {
+              "description": "Connect through OAuth to a dedicated workspace with at least one indexed source.",
+              "prompt": "What sources can I search in Bulkgrid?",
+              "tools_triggered": "list_sources",
+              "expected_behavior": "List only returned accessible sources with names, URLs and indexing availability. Follow nextCursor if needed; do not claim indexing availability proves freshness."
+            },
+            {
+              "description": "Connect to a workspace containing an indexed documentation source with known content. Reviewer must choose and record a real topic before running.",
+              "prompt": "Find an indexed documentation source, explain one topic it covers, and cite the evidence.",
+              "tools_triggered": "list_sources, search",
+              "expected_behavior": "Resolve a returned source ID, use sourceIds to restrict search to it, and support the explanation with returned passages and source URLs."
+            },
+            {
+              "description": "Connect to a workspace with at least one accessible nonempty collection.",
+              "prompt": "Show my collections, choose one with indexed content, and summarize a topic using only that collection.",
+              "tools_triggered": "list_collections, search",
+              "expected_behavior": "Use the selected returned UUID as collectionId on every search. Explain the selection, cite returned URLs, and do not silently widen scope."
+            },
+            {
+              "description": "Run after a successful search in this conversation returns a document with more than five indexed chunks.",
+              "prompt": "Read the full indexed document behind the first result and explain its main points with citations.",
+              "tools_triggered": "get_document",
+              "expected_behavior": "Pass the first result source_document_id as documentId. Read from startChunk 0 and follow nextChunk as startChunk until null. Account for overlapping passages; describe indexed coverage rather than claiming to fetch the live page."
+            },
+            {
+              "description": "OAuth connection established; no content fixture required.",
+              "prompt": "What search limits and ranking options does Bulkgrid support?",
+              "tools_triggered": "get_search_capabilities",
+              "expected_behavior": "Call with an empty object. Explain returned limits and weighting defaults accurately without inventing unsupported filters."
+            }
+          ],
+          "negative": [
+            {
+              "description": "Source ingestion is outside this OAuth retrieval plugin. Explain that adding and syncing sources must be done in Bulkgrid; invoke no tools and claim no ingestion.",
+              "prompt": "Add https://example.com as a new Bulkgrid source and start crawling it."
+            },
+            {
+              "description": "Deletion is unsupported. Explain the limitation without invoking tools or claiming deletion.",
+              "prompt": "Delete every source and collection in my Bulkgrid workspace."
+            },
+            {
+              "description": "The user explicitly excludes indexed retrieval. Explain that this plugin cannot fetch live pages; invoke no Bulkgrid tools or claim current coverage.",
+              "prompt": "Fetch the live contents of https://example.com right now, without using any indexed copy."
+            }
+          ]
+        }
+      },
+      "publication": {
+        "release_notes": "Search and retrieval plugin with source discovery, collection-scoped search, indexed document reading, and citation guidance.",
+        "countries": []
+      }
+    }
+  }
+}

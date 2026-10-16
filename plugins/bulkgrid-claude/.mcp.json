@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "bulkgrid": {
+      "type": "http",
+      "url": "https://bulkgrid.com/api/v1/mcp"
+    }
+  }
+}

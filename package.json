@@ -11,24 +11,33 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "npm run build -w @bulkgrid/sdk && npm run build -w @bulkgrid/cli",
+    "build": "npm run build -w @bulkgrid/sdk && npm run build -w @bulkgrid/cli && npm run plugins:build",
     "test": "vitest run",
-    "check:types": "npm run check-types --workspaces --if-present",
-    "lint": "eslint packages/sdk/src packages/cli/src",
-    "docs:check": "node docs/scripts/checkDocs.mjs",
-    "openapi:generate": "node scripts/generateOpenApi.mjs",
-    "check": "npm run build && npm run check:types && npm test && npm run lint && npm run docs:check && npm run export:check",
-    "export:check": "node scripts/checkExport.mjs"
+    "check:types": "npm run check-types --workspaces --if-present && npm run check:types:tooling",
+    "lint": "eslint packages/sdk/src packages/cli/src scripts docs/scripts vitest.config.ts",
+    "docs:check": "tsx docs/scripts/checkDocs.ts",
+    "openapi:generate": "tsx scripts/generateOpenApi.ts",
+    "check": "npm run check:types:tooling && npm run plugins:check && npm run build && npm run check:types && npm test && npm run lint && npm run docs:check && npm run export:check",
+    "export:check": "tsx scripts/checkExport.ts",
+    "export:apply": "tsx scripts/applyExport.ts",
+    "plugins:build": "tsx scripts/plugins/build.ts",
+    "plugins:check": "tsx scripts/plugins/check.ts",
+    "plugins:archive": "tsx scripts/plugins/archive.ts --output-dir dist/plugins",
+    "test:plugins": "vitest run scripts/plugins",
+    "test:export": "vitest run scripts/applyExport.test.ts",
+    "check:types:tooling": "tsc --noEmit -p tsconfig.scripts.json",
+    "plugins:check-version": "tsx scripts/plugins/checkVersion.ts"
   },
   "devDependencies": {
-    "typescript": "5.9.3",
-    "tsdown": "0.22.14",
-    "vitest": "4.1.10",
+    "@eslint/js": "9.39.2",
     "@types/node": "25.9.3",
     "eslint": "9.39.2",
-    "@eslint/js": "9.39.2",
-    "typescript-eslint": "8.56.0",
     "globals": "17.2.0",
-    "prettier": "3.8.4"
+    "prettier": "3.8.4",
+    "tsdown": "0.22.14",
+    "tsx": "4.23.15",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.56.0",
+    "vitest": "4.1.10"
   }
 }

@@ -1,0 +1,9 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "bulkgrid": {
+      "type": "streamable-http",
+      "url": "https://bulkgrid.com/api/v1/mcp"
+    }
+  }
+}
