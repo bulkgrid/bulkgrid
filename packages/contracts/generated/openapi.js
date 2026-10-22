@@ -1,4 +1,4 @@
-import { n as apiErrorResponseSchema, t as apiContract } from "./publicApi-C_rt-6-Z.js";
+import { n as apiErrorResponseSchema, t as apiContract } from "./publicApi-dbb3NiSo.js";
 import { z } from "zod";
 //#region packages/api-contract/src/openapi.ts
 const DEFAULT_JSON_CONTENT_TYPE = "application/json";
@@ -9,8 +9,17 @@ const errorSchema = z.toJSONSchema(apiErrorResponseSchema, {
 const endpointMetadata = /* @__PURE__ */ new Map([
 	[apiContract.search, {
 		operationId: "search",
+		summary: "Search web pages, images, or news and optionally crawl source pages",
+		tag: "Search",
+		errorResponses: { "502": {
+			description: "Search provider unavailable, timed out, or returned an invalid response",
+			content: { [DEFAULT_JSON_CONTENT_TYPE]: { schema: errorSchema } }
+		} }
+	}],
+	[apiContract.index.search, {
+		operationId: "indexSearch",
 		summary: "Search indexed content",
-		tag: "Search"
+		tag: "Index"
 	}],
 	[apiContract.extract, {
 		operationId: "createExtractRun",
@@ -20,6 +29,11 @@ const endpointMetadata = /* @__PURE__ */ new Map([
 	[apiContract.crawl, {
 		operationId: "createCrawlRun",
 		summary: "Create a crawl run",
+		tag: "Runs"
+	}],
+	[apiContract.map, {
+		operationId: "createMapRun",
+		summary: "Create a website map run",
 		tag: "Runs"
 	}],
 	[apiContract.deepCrawl, {
@@ -95,15 +109,17 @@ const endpointMetadata = /* @__PURE__ */ new Map([
 	}]
 ]);
 const endpointScopes = /* @__PURE__ */ new Map([
-	[apiContract.search, "search:query"],
+	[apiContract.index.search, "search:query"],
+	[apiContract.search, "search:query (also runs:write when crawl is true)"],
 	[apiContract.extract, "extract:write"],
 	[apiContract.crawl, "runs:write"],
+	[apiContract.map, "runs:write"],
 	[apiContract.deepCrawl, "runs:write"],
 	[apiContract.runs.list, "runs:read"],
 	[apiContract.runs.create, "runs:write"],
 	[apiContract.runs.get, "runs:read"],
 	[apiContract.runs.cancel, "runs:cancel"],
-	[apiContract.runs.retry, "runs:retry"],
+	[apiContract.runs.retry, "runs:retry (also search:query for Search runs)"],
 	[apiContract.runs.delete, "runs:delete"],
 	[apiContract.runs.results, "results:read"],
 	[apiContract.runs.resultContent, "results:read"],
@@ -111,7 +127,7 @@ const endpointScopes = /* @__PURE__ */ new Map([
 ]);
 const resourceEndpoints = [
 	{
-		endpoint: apiContract.sources.analyze,
+		endpoint: apiContract.index.sources.analyze,
 		scope: "sources:discover and runs:write",
 		metadata: {
 			operationId: "analyzeSource",
@@ -121,7 +137,7 @@ const resourceEndpoints = [
 		}
 	},
 	{
-		endpoint: apiContract.sources.analysis,
+		endpoint: apiContract.index.sources.analysis,
 		scope: "sources:discover",
 		metadata: {
 			operationId: "getSourceAnalysis",
@@ -130,7 +146,7 @@ const resourceEndpoints = [
 		}
 	},
 	{
-		endpoint: apiContract.sources.list,
+		endpoint: apiContract.index.sources.list,
 		metadata: {
 			operationId: "sourcesList",
 			summary: "List subscribed and owned sources",
@@ -139,7 +155,7 @@ const resourceEndpoints = [
 		scope: "sources:read"
 	},
 	{
-		endpoint: apiContract.sources.search,
+		endpoint: apiContract.index.sources.search,
 		metadata: {
 			operationId: "sourcesSearch",
 			summary: "Find public and owned sources",
@@ -148,7 +164,7 @@ const resourceEndpoints = [
 		scope: "sources:read"
 	},
 	{
-		endpoint: apiContract.sources.create,
+		endpoint: apiContract.index.sources.create,
 		metadata: {
 			operationId: "sourcesCreate",
 			summary: "Create or subscribe to a source",
@@ -157,7 +173,7 @@ const resourceEndpoints = [
 		scope: "sources:write"
 	},
 	{
-		endpoint: apiContract.sources.get,
+		endpoint: apiContract.index.sources.get,
 		metadata: {
 			operationId: "sourcesGet",
 			summary: "Get a source",
@@ -166,7 +182,7 @@ const resourceEndpoints = [
 		scope: "sources:read"
 	},
 	{
-		endpoint: apiContract.sources.update,
+		endpoint: apiContract.index.sources.update,
 		metadata: {
 			operationId: "sourcesUpdate",
 			summary: "Update a source",
@@ -175,7 +191,7 @@ const resourceEndpoints = [
 		scope: "sources:write"
 	},
 	{
-		endpoint: apiContract.sources.delete,
+		endpoint: apiContract.index.sources.delete,
 		metadata: {
 			operationId: "sourcesDelete",
 			summary: "Delete a source or remove its subscription",
@@ -184,7 +200,7 @@ const resourceEndpoints = [
 		scope: "sources:write"
 	},
 	{
-		endpoint: apiContract.sources.status,
+		endpoint: apiContract.index.sources.status,
 		metadata: {
 			operationId: "sourcesStatus",
 			summary: "Get source indexing status",
@@ -193,7 +209,7 @@ const resourceEndpoints = [
 		scope: "sources:read"
 	},
 	{
-		endpoint: apiContract.sources.documents,
+		endpoint: apiContract.index.sources.documents,
 		metadata: {
 			operationId: "sourcesDocuments",
 			summary: "List source documents",
@@ -202,7 +218,7 @@ const resourceEndpoints = [
 		scope: "sources:read"
 	},
 	{
-		endpoint: apiContract.sources.changes,
+		endpoint: apiContract.index.sources.changes,
 		metadata: {
 			operationId: "sourcesChanges",
 			summary: "List source changes for a run",
@@ -211,17 +227,63 @@ const resourceEndpoints = [
 		scope: "sources:read"
 	},
 	{
-		endpoint: apiContract.sources.createGithub,
+		endpoint: apiContract.index.sources.subscriptionStatus,
 		metadata: {
-			operationId: "sourcesCreateGithub",
-			summary: "Create a GitHub source",
-			tag: "Sources",
-			successStatus: "202"
+			operationId: "sourcesSubscriptionStatus",
+			summary: "Check source subscription in a workspace",
+			tag: "Sources"
+		},
+		scope: "sources:read"
+	},
+	{
+		endpoint: apiContract.index.sources.subscribe,
+		metadata: {
+			operationId: "sourcesSubscribe",
+			summary: "Subscribe to an existing public source",
+			tag: "Sources"
 		},
 		scope: "sources:write"
 	},
 	{
-		endpoint: apiContract.sources.recrawl,
+		endpoint: apiContract.index.sources.githubConnections,
+		metadata: {
+			operationId: "sourcesGithubConnections",
+			summary: "List workspace GitHub connections and permitted repositories",
+			tag: "Sources"
+		},
+		scope: "sources:read"
+	},
+	{
+		endpoint: apiContract.index.sources.analyzeGithub,
+		metadata: {
+			operationId: "sourcesAnalyzeGithub",
+			summary: "Analyze a GitHub repository",
+			tag: "Sources"
+		},
+		scope: "sources:write"
+	},
+	{
+		endpoint: apiContract.index.sources.savedGithubAnalysis,
+		metadata: {
+			operationId: "sourcesSavedGithubAnalysis",
+			summary: "Load saved GitHub repository analysis",
+			tag: "Sources"
+		},
+		scope: "sources:read"
+	},
+	{
+		endpoint: apiContract.index.sources.createGithub,
+		metadata: {
+			operationId: "sourcesCreateGithub",
+			summary: "Create or subscribe to a GitHub source",
+			tag: "Sources",
+			successStatus: "202",
+			additionalSuccessStatuses: ["200"]
+		},
+		scope: "sources:write"
+	},
+	{
+		endpoint: apiContract.index.sources.recrawl,
 		metadata: {
 			operationId: "sourcesRecrawl",
 			additionalSuccessStatuses: ["202"],
@@ -231,7 +293,7 @@ const resourceEndpoints = [
 		scope: "sources:write and runs:write"
 	},
 	{
-		endpoint: apiContract.collections.list,
+		endpoint: apiContract.index.collections.list,
 		metadata: {
 			operationId: "collectionsList",
 			summary: "List accessible collections",
@@ -240,7 +302,7 @@ const resourceEndpoints = [
 		scope: "collections:read"
 	},
 	{
-		endpoint: apiContract.collections.create,
+		endpoint: apiContract.index.collections.create,
 		metadata: {
 			operationId: "collectionsCreate",
 			summary: "Create a collection",
@@ -249,7 +311,7 @@ const resourceEndpoints = [
 		scope: "collections:write"
 	},
 	{
-		endpoint: apiContract.collections.get,
+		endpoint: apiContract.index.collections.get,
 		metadata: {
 			operationId: "collectionsGet",
 			summary: "Get a collection",
@@ -258,7 +320,7 @@ const resourceEndpoints = [
 		scope: "collections:read"
 	},
 	{
-		endpoint: apiContract.collections.update,
+		endpoint: apiContract.index.collections.update,
 		metadata: {
 			operationId: "collectionsUpdate",
 			summary: "Update a collection",
@@ -267,7 +329,7 @@ const resourceEndpoints = [
 		scope: "collections:write"
 	},
 	{
-		endpoint: apiContract.collections.delete,
+		endpoint: apiContract.index.collections.delete,
 		metadata: {
 			operationId: "collectionsDelete",
 			summary: "Delete a collection",
@@ -276,7 +338,7 @@ const resourceEndpoints = [
 		scope: "collections:write"
 	},
 	{
-		endpoint: apiContract.collections.rules,
+		endpoint: apiContract.index.collections.rules,
 		metadata: {
 			operationId: "collectionsRules",
 			summary: "Get collection rules",
@@ -285,7 +347,7 @@ const resourceEndpoints = [
 		scope: "collections:read"
 	},
 	{
-		endpoint: apiContract.collections.updateRules,
+		endpoint: apiContract.index.collections.updateRules,
 		metadata: {
 			operationId: "collectionsUpdateRules",
 			summary: "Update collection rules",
@@ -300,9 +362,11 @@ for (const { endpoint, metadata, scope } of resourceEndpoints) {
 }
 const publicEndpoints = [
 	...resourceEndpoints.map(({ endpoint }) => endpoint),
+	apiContract.index.search,
 	apiContract.search,
 	apiContract.extract,
 	apiContract.crawl,
+	apiContract.map,
 	apiContract.deepCrawl,
 	apiContract.runs.list,
 	apiContract.runs.create,
@@ -409,7 +473,8 @@ function buildPathItem(endpoint, toOpenApiSchema) {
 		requestBody: buildRequestBody(endpoint, metadata, toOpenApiSchema),
 		responses: {
 			...Object.fromEntries([successStatus, ...metadata.additionalSuccessStatuses ?? []].map((status) => [status, buildSuccessResponse(endpoint, metadata, toOpenApiSchema)])),
-			...buildErrorResponses()
+			...buildErrorResponses(),
+			...metadata.errorResponses
 		},
 		security: [{ apiKeyAuth: [] }, { bearerAuth: [] }]
 	} };
@@ -421,8 +486,8 @@ function createOpenApiDocument() {
 		openapi: "3.0.3",
 		info: {
 			title: "Bulkgrid API",
-			version: "0.1.0",
-			description: "Search indexed content, create crawl and extraction runs, and retrieve results. API keys require the scopes listed for each operation. OAuth connections grant MCP and search access only."
+			version: "0.4.0",
+			description: "Search the live web, manage and search indexed content under /index, create crawl and extraction runs, and retrieve results. API keys require the scopes listed for each operation. OAuth connections grant MCP and search access only."
 		},
 		servers: [{
 			url: "https://bulkgrid.com",
@@ -441,6 +506,10 @@ function createOpenApiDocument() {
 			{
 				name: "Search",
 				description: "Search endpoints"
+			},
+			{
+				name: "Index",
+				description: "Search indexed workspace content"
 			},
 			{
 				name: "Runs",

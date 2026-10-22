@@ -13,48 +13,82 @@ export const apiErrorResponseSchema = z.object({
 export type ApiErrorResponse = z.infer<typeof apiErrorResponseSchema>;
 
 export const apiContract = {
-  sources: {
-    analyze: { method: internalApiContract.sources.analyze.method, path: internalApiContract.sources.analyze.path },
-    getAnalysis: { method: internalApiContract.sources.analysis.method, path: internalApiContract.sources.analysis.path },
-    list: { method: internalApiContract.sources.list.method, path: internalApiContract.sources.list.path },
-    search: { method: internalApiContract.sources.search.method, path: internalApiContract.sources.search.path },
-    create: { method: internalApiContract.sources.create.method, path: internalApiContract.sources.create.path },
-    get: { method: internalApiContract.sources.get.method, path: internalApiContract.sources.get.path },
-    update: { method: internalApiContract.sources.update.method, path: internalApiContract.sources.update.path },
-    delete: { method: internalApiContract.sources.delete.method, path: internalApiContract.sources.delete.path },
-    status: { method: internalApiContract.sources.status.method, path: internalApiContract.sources.status.path },
-    createGithub: {
-      method: internalApiContract.sources.createGithub.method,
-      path: internalApiContract.sources.createGithub.path,
+  index: {
+    sources: {
+      subscribe: {
+        method: internalApiContract.index.sources.subscribe.method,
+        path: internalApiContract.index.sources.subscribe.path,
+      },
+      githubConnections: {
+        method: internalApiContract.index.sources.githubConnections.method,
+        path: internalApiContract.index.sources.githubConnections.path,
+      },
+      analyzeGithub: {
+        method: internalApiContract.index.sources.analyzeGithub.method,
+        path: internalApiContract.index.sources.analyzeGithub.path,
+      },
+      analyze: { method: internalApiContract.index.sources.analyze.method, path: internalApiContract.index.sources.analyze.path },
+      getAnalysis: {
+        method: internalApiContract.index.sources.analysis.method,
+        path: internalApiContract.index.sources.analysis.path,
+      },
+      list: { method: internalApiContract.index.sources.list.method, path: internalApiContract.index.sources.list.path },
+      search: { method: internalApiContract.index.sources.search.method, path: internalApiContract.index.sources.search.path },
+      create: { method: internalApiContract.index.sources.create.method, path: internalApiContract.index.sources.create.path },
+      get: { method: internalApiContract.index.sources.get.method, path: internalApiContract.index.sources.get.path },
+      update: { method: internalApiContract.index.sources.update.method, path: internalApiContract.index.sources.update.path },
+      delete: { method: internalApiContract.index.sources.delete.method, path: internalApiContract.index.sources.delete.path },
+      status: { method: internalApiContract.index.sources.status.method, path: internalApiContract.index.sources.status.path },
+      createGithub: {
+        method: internalApiContract.index.sources.createGithub.method,
+        path: internalApiContract.index.sources.createGithub.path,
+      },
+      recrawl: { method: internalApiContract.index.sources.recrawl.method, path: internalApiContract.index.sources.recrawl.path },
+      documents: {
+        method: internalApiContract.index.sources.documents.method,
+        path: internalApiContract.index.sources.documents.path,
+      },
+      changes: { method: internalApiContract.index.sources.changes.method, path: internalApiContract.index.sources.changes.path },
     },
-    recrawl: { method: internalApiContract.sources.recrawl.method, path: internalApiContract.sources.recrawl.path },
-    documents: { method: internalApiContract.sources.documents.method, path: internalApiContract.sources.documents.path },
-    changes: { method: internalApiContract.sources.changes.method, path: internalApiContract.sources.changes.path },
-  },
-  collections: {
-    list: { method: internalApiContract.collections.list.method, path: internalApiContract.collections.list.path },
-    create: { method: internalApiContract.collections.create.method, path: internalApiContract.collections.create.path },
-    get: { method: internalApiContract.collections.get.method, path: internalApiContract.collections.get.path },
-    update: { method: internalApiContract.collections.update.method, path: internalApiContract.collections.update.path },
-    delete: { method: internalApiContract.collections.delete.method, path: internalApiContract.collections.delete.path },
-    rules: { method: internalApiContract.collections.rules.method, path: internalApiContract.collections.rules.path },
-    updateRules: {
-      method: internalApiContract.collections.updateRules.method,
-      path: internalApiContract.collections.updateRules.path,
+    collections: {
+      list: { method: internalApiContract.index.collections.list.method, path: internalApiContract.index.collections.list.path },
+      create: {
+        method: internalApiContract.index.collections.create.method,
+        path: internalApiContract.index.collections.create.path,
+      },
+      get: { method: internalApiContract.index.collections.get.method, path: internalApiContract.index.collections.get.path },
+      update: {
+        method: internalApiContract.index.collections.update.method,
+        path: internalApiContract.index.collections.update.path,
+      },
+      delete: {
+        method: internalApiContract.index.collections.delete.method,
+        path: internalApiContract.index.collections.delete.path,
+      },
+      rules: {
+        method: internalApiContract.index.collections.rules.method,
+        path: internalApiContract.index.collections.rules.path,
+      },
+      updateRules: {
+        method: internalApiContract.index.collections.updateRules.method,
+        path: internalApiContract.index.collections.updateRules.path,
+      },
+    },
+    search: {
+      method: internalApiContract.index.search.method,
+      path: internalApiContract.index.search.path,
     },
   },
   extract: {
     method: internalApiContract.extract.method,
     path: internalApiContract.extract.path,
   },
-  search: {
-    method: internalApiContract.search.method,
-    path: internalApiContract.search.path,
-  },
+  search: { method: internalApiContract.search.method, path: internalApiContract.search.path },
   crawl: {
     method: internalApiContract.crawl.method,
     path: internalApiContract.crawl.path,
   },
+  map: { method: internalApiContract.map.method, path: internalApiContract.map.path },
   deepCrawl: {
     method: internalApiContract.deepCrawl.method,
     path: internalApiContract.deepCrawl.path,
@@ -100,7 +134,7 @@ export const apiContract = {
 } as const;
 
 export type CrawlRunStatus = 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled';
-export type CrawlRunType = 'crawl' | 'deep_crawl' | 'extract' | 'source_sync';
+export type CrawlRunType = import('@bulkgrid/contracts').CrawlRunType;
 export type ResultContentType = 'markdown' | 'cleanHtml' | 'rawHtml' | 'links';
 
 export type CrawlRun = import('@bulkgrid/contracts').CrawlRun;
@@ -109,9 +143,18 @@ export type CrawlResult = import('@bulkgrid/contracts').CrawlResult;
 
 export type CrawlRunStatistics = import('@bulkgrid/contracts').CrawlRunStatistics;
 
+export type IndexSearchResult = import('@bulkgrid/contracts').IndexSearchResult;
 export type SearchResult = import('@bulkgrid/contracts').SearchResult;
+export type WebSearchResult = import('@bulkgrid/contracts').WebSearchResult;
+export type ImageSearchResult = import('@bulkgrid/contracts').ImageSearchResult;
+export type NewsSearchResult = import('@bulkgrid/contracts').NewsSearchResult;
 
+export type IndexSearchResponse = import('@bulkgrid/contracts').IndexSearchResponse;
 export type SearchResponse = import('@bulkgrid/contracts').SearchResponse;
+export type WebSearchResponse = import('@bulkgrid/contracts').WebSearchResponse;
+export type ImageSearchResponse = import('@bulkgrid/contracts').ImageSearchResponse;
+export type NewsSearchResponse = import('@bulkgrid/contracts').NewsSearchResponse;
+export type BulkgridSearchInput = import('@bulkgrid/contracts/schemas').WebSearchInput;
 
 export type SdkSuccessResponse = import('@bulkgrid/contracts').SdkSuccessResponse;
 
@@ -200,21 +243,28 @@ export interface BulkgridRetryRunInput {
   urls?: string[];
 }
 
-export interface BulkgridSearchInput {
+export interface BulkgridIndexSearchInput {
   query: string;
   queries?: string[];
   queryMode?: 'none' | 'auto';
   limit?: number;
   collectionId?: string;
+  sourceIds?: string[];
   fullTextWeight?: number;
   semanticWeight?: number;
   rrfK?: number;
 }
 
+export interface BulkgridMapInput {
+  url: string;
+  config?: import('@bulkgrid/contracts/schemas').MapOptions;
+}
+
 export type BulkgridRunCreateInput =
   | ({ type: 'crawl' } & BulkgridCrawlInput)
   | ({ type: 'extract' } & BulkgridExtractInput)
-  | ({ type: 'deep_crawl' } & BulkgridDeepCrawlInput);
+  | ({ type: 'deep_crawl' } & BulkgridDeepCrawlInput)
+  | ({ type: 'map' } & BulkgridMapInput);
 
 export interface BulkgridClientOptions {
   apiKey: string;
@@ -255,8 +305,9 @@ export class BulkgridClient {
   private readonly userAgent: string | undefined;
   private readonly validateResponses: boolean;
 
-  readonly sources: ReturnType<typeof createResourceClients>['sources'];
-  readonly collections: ReturnType<typeof createResourceClients>['collections'];
+  readonly index: ReturnType<typeof createResourceClients> & {
+    search: (input: BulkgridIndexSearchInput, options?: RequestOptions) => Promise<IndexSearchResponse>;
+  };
 
   readonly runs: {
     list: (query?: ListRunsQuery, options?: RequestOptions) => Promise<ListRunsResponse>;
@@ -281,8 +332,15 @@ export class BulkgridClient {
     this.userAgent = options.userAgent;
     this.validateResponses = options.validateResponses ?? true;
     const resources = createResourceClients((method, path, requestOptions) => this.requestJson(method, path, requestOptions));
-    this.sources = resources.sources;
-    this.collections = resources.collections;
+    this.index = {
+      ...resources,
+      search: (input, requestOptions) =>
+        this.requestJson('POST', internalApiContract.index.search.path, {
+          body: input,
+          responseSchema: internalApiContract.index.search.responseSchema,
+          ...requestOptions,
+        }),
+    };
     this.runs = {
       list: (query, requestOptions) =>
         this.requestJson('GET', internalApiContract.runs.list.path, {
@@ -347,6 +405,14 @@ export class BulkgridClient {
     });
   }
 
+  async crawl(input: BulkgridCrawlInput, options?: RequestOptions): Promise<CrawlRun> {
+    return this.requestJson('POST', internalApiContract.crawl.path, {
+      body: { ...input, type: 'crawl' },
+      responseSchema: internalApiContract.crawl.responseSchema,
+      ...options,
+    });
+  }
+
   async search(input: BulkgridSearchInput, options?: RequestOptions): Promise<SearchResponse> {
     return this.requestJson('POST', internalApiContract.search.path, {
       body: input,
@@ -355,10 +421,10 @@ export class BulkgridClient {
     });
   }
 
-  async crawl(input: BulkgridCrawlInput, options?: RequestOptions): Promise<CrawlRun> {
-    return this.requestJson('POST', internalApiContract.crawl.path, {
-      body: { ...input, type: 'crawl' },
-      responseSchema: internalApiContract.crawl.responseSchema,
+  async map(input: BulkgridMapInput, options?: RequestOptions): Promise<CrawlRun> {
+    return this.requestJson('POST', internalApiContract.map.path, {
+      body: { ...input, type: 'map' },
+      responseSchema: internalApiContract.map.responseSchema,
       ...options,
     });
   }

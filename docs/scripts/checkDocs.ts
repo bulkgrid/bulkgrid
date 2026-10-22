@@ -39,15 +39,17 @@ export interface DocsCheckResult {
 
 const DOCS_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const requestSchemas = new Map<string, RequestSchema>([
+  ['/api/v1/index/search', apiContract.index.search.requestSchema],
+  ['/api/v1/map', apiContract.map.requestSchema],
   ['/api/v1/search', apiContract.search.requestSchema],
   ['/api/v1/crawl', apiContract.crawl.requestSchema],
   ['/api/v1/extract', apiContract.extract.requestSchema],
   ['/api/v1/deep-crawl', apiContract.deepCrawl.requestSchema],
-  ['/api/v1/sources', createSourceSchema],
-  ['/api/v1/collections', createCollectionSchema],
-  ['/api/v1/sources/discover/analyses', apiContract.sources.analyze.requestSchema],
+  ['/api/v1/index/sources', createSourceSchema],
+  ['/api/v1/index/collections', createCollectionSchema],
+  ['/api/v1/index/sources/discover/analyses', apiContract.index.sources.analyze.requestSchema],
   ['/api/v1/extract/schema', extractSchemaGenerationRequestSchema],
-  ['/api/v1/sources/github', githubSourceCreateRequestSchema],
+  ['/api/v1/index/sources/github', githubSourceCreateRequestSchema],
 ]);
 
 function isRecord(value: unknown): value is Record<string, unknown> {

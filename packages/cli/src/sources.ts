@@ -38,14 +38,14 @@ export function registerSourceCommands(program: Command, clientFactory: ClientFa
       .option('--url <url>', 'Bulkgrid origin; defaults to BULKGRID_URL or https://bulkgrid.com');
   const print = (result: unknown) => console.log(JSON.stringify(result, null, 2));
   command('find <query>', 'Find existing sources before adding one').action(
-    async (query: string, options: SourceCommandOptions) => print(await clientFactory(options).sources.search(query)),
+    async (query: string, options: SourceCommandOptions) => print(await clientFactory(options).index.sources.search(query)),
   );
   command('analyze <sourceUrl>', 'Start deeper analysis; may create a crawl run and consume resources').action(
-    async (url: string, options: SourceCommandOptions) => print(await clientFactory(options).sources.analyze({ url })),
+    async (url: string, options: SourceCommandOptions) => print(await clientFactory(options).index.sources.analyze({ url })),
   );
   command('analysis-status <analysisId>', 'Read analysis progress and warnings').action(
     async (analysisId: string, options: SourceCommandOptions) =>
-      print(await clientFactory(options).sources.getAnalysis(uuid.parse(analysisId))),
+      print(await clientFactory(options).index.sources.getAnalysis(uuid.parse(analysisId))),
   );
   command('add', 'Create or subscribe to a source; may initiate ongoing ingestion')
     .requiredOption('--input <json>', 'Source configuration JSON including explicit visibility, boundaries and refresh interval')
@@ -53,29 +53,55 @@ export function registerSourceCommands(program: Command, clientFactory: ClientFa
       const input = sourceInputSchemas.create
         .safeExtend({ visibility: z.enum(['public', 'private']) })
         .parse(JSON.parse(options.input ?? '{}'));
-      print(await clientFactory(options).sources.create(input));
+      print(await clientFactory(options).index.sources.create(input));
+    });
+  command('github-connections', 'List workspace GitHub connections and permitted repositories').action(
+    async (options: SourceCommandOptions) => print(await clientFactory(options).index.sources.githubConnections()),
+  );
+  command('subscribe <sourceId>', 'Subscribe to an existing public source without starting ingestion').action(
+    async (sourceId: string, options: SourceCommandOptions) =>
+      print(await clientFactory(options).index.sources.subscribe(uuid.parse(sourceId))),
+  );
+  command('add-github', 'Create a GitHub source; private repositories require a workspace connection')
+    .requiredOption(
+      '--input <json>',
+      'Repository URL, explicit visibility, connection_id for private repositories and indexing settings',
+    )
+    .action(async (options: SourceCommandOptions) => {
+      const input = sourceInputSchemas.createGithub
+        .extend({ repositoryUrl: z.url(), visibility: z.enum(['public', 'private']) })
+        .parse(JSON.parse(options.input ?? '{}'));
+      sourceInputSchemas.createGithub.parse(input);
+      print(await clientFactory(options).index.sources.createGithub(input));
+    });
+  command('analyze-github', 'Analyze documentation paths in a permitted GitHub repository')
+    .requiredOption('--input <json>', 'Repository URL and optional connection_id and ref')
+    .action(async (options: SourceCommandOptions) => {
+      const input = sourceInputSchemas.analyzeGithub.extend({ repositoryUrl: z.url() }).parse(JSON.parse(options.input ?? '{}'));
+      sourceInputSchemas.analyzeGithub.parse(input);
+      print(await clientFactory(options).index.sources.analyzeGithub(input));
     });
   command('status <sourceId>', 'Read crawl status, errors, size and indexed item counts').action(
     async (sourceId: string, options: SourceCommandOptions) =>
-      print(await clientFactory(options).sources.status(uuid.parse(sourceId))),
+      print(await clientFactory(options).index.sources.status(uuid.parse(sourceId))),
   );
   command('recrawl <sourceId>', 'Start a manual refresh using saved configuration; may consume credits').action(
     async (sourceId: string, options: SourceCommandOptions) =>
-      print(await clientFactory(options).sources.recrawl(uuid.parse(sourceId))),
+      print(await clientFactory(options).index.sources.recrawl(uuid.parse(sourceId))),
   );
   command('collections', 'List collections available for source management').action(async (options: SourceCommandOptions) =>
-    print(await clientFactory(options).collections.list()),
+    print(await clientFactory(options).index.collections.list()),
   );
   command('rules <collectionId>', 'Inspect collection rules before changing membership').action(
     async (collectionId: string, options: SourceCommandOptions) =>
-      print(await clientFactory(options).collections.rules(uuid.parse(collectionId))),
+      print(await clientFactory(options).index.collections.rules(uuid.parse(collectionId))),
   );
   command(
     'include <sourceId> <collectionId>',
     'Include the entire source in a collection, broadening its retrieval coverage',
   ).action(async (sourceId: string, collectionId: string, options: SourceCommandOptions) =>
     print(
-      await clientFactory(options).collections.addSource({
+      await clientFactory(options).index.collections.addSource({
         sourceId: uuid.parse(sourceId),
         collectionId: uuid.parse(collectionId),
       }),

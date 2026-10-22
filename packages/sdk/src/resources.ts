@@ -3,37 +3,39 @@ import { apiContract } from '@bulkgrid/contracts';
 import type { RequestOptions } from './index.js';
 
 export const sourceInputSchemas = {
-  analyze: apiContract.sources.analyze.requestSchema,
-  create: apiContract.sources.create.requestSchema,
+  createGithub: apiContract.index.sources.createGithub.requestSchema,
+  analyzeGithub: apiContract.index.sources.analyzeGithub.requestSchema,
+  analyze: apiContract.index.sources.analyze.requestSchema,
+  create: apiContract.index.sources.create.requestSchema,
 };
 
-export type AnalyzeSourceInput = z.input<typeof apiContract.sources.analyze.requestSchema>;
-export type SourceAnalysisResponse = z.output<typeof apiContract.sources.analysis.responseSchema>;
-export type SourceDocumentsQuery = z.input<typeof apiContract.sources.documents.querySchema>;
-export type SourceChangesQuery = z.input<typeof apiContract.sources.changes.querySchema>;
-export type SourceDocumentsResponse = z.output<typeof apiContract.sources.documents.responseSchema>;
-export type SourceChangesResponse = z.output<typeof apiContract.sources.changes.responseSchema>;
-export type CreateSourceInput = z.input<typeof apiContract.sources.create.requestSchema>;
-export type UpdateSourceInput = z.input<typeof apiContract.sources.update.requestSchema>;
-export type CreateGithubSourceInput = z.input<typeof apiContract.sources.createGithub.requestSchema>;
-export type ListSourcesQuery = z.input<typeof apiContract.sources.list.querySchema>;
-export type CreateCollectionInput = z.input<typeof apiContract.collections.create.requestSchema>;
-export type UpdateCollectionInput = z.input<typeof apiContract.collections.update.requestSchema>;
+export type AnalyzeSourceInput = z.input<typeof apiContract.index.sources.analyze.requestSchema>;
+export type SourceAnalysisResponse = z.output<typeof apiContract.index.sources.analysis.responseSchema>;
+export type SourceDocumentsQuery = z.input<typeof apiContract.index.sources.documents.querySchema>;
+export type SourceChangesQuery = z.input<typeof apiContract.index.sources.changes.querySchema>;
+export type SourceDocumentsResponse = z.output<typeof apiContract.index.sources.documents.responseSchema>;
+export type SourceChangesResponse = z.output<typeof apiContract.index.sources.changes.responseSchema>;
+export type CreateSourceInput = z.input<typeof apiContract.index.sources.create.requestSchema>;
+export type UpdateSourceInput = z.input<typeof apiContract.index.sources.update.requestSchema>;
+export type CreateGithubSourceInput = z.input<typeof apiContract.index.sources.createGithub.requestSchema>;
+export type ListSourcesQuery = z.input<typeof apiContract.index.sources.list.querySchema>;
+export type CreateCollectionInput = z.input<typeof apiContract.index.collections.create.requestSchema>;
+export type UpdateCollectionInput = z.input<typeof apiContract.index.collections.update.requestSchema>;
 export interface CollectionSourceInput {
   collectionId: string;
   sourceId: string;
 }
-export type UpdateCollectionRulesInput = z.input<typeof apiContract.collections.updateRules.requestSchema>;
-export type ListSourcesResponse = z.output<typeof apiContract.sources.list.responseSchema>;
-export type SearchSourcesResponse = z.output<typeof apiContract.sources.search.responseSchema>;
-export type CreateSourceResponse = z.output<typeof apiContract.sources.create.responseSchema>;
-export type GetSourceResponse = z.output<typeof apiContract.sources.get.responseSchema>;
-export type UpdateSourceResponse = z.output<typeof apiContract.sources.update.responseSchema>;
-export type CreateGithubSourceResponse = z.output<typeof apiContract.sources.createGithub.responseSchema>;
-export type RecrawlSourceResponse = z.output<typeof apiContract.sources.recrawl.responseSchema>;
-export type ListCollectionsResponse = z.output<typeof apiContract.collections.list.responseSchema>;
-export type CollectionResponse = z.output<typeof apiContract.collections.get.responseSchema>;
-export type CollectionRulesResponse = z.output<typeof apiContract.collections.rules.responseSchema>;
+export type UpdateCollectionRulesInput = z.input<typeof apiContract.index.collections.updateRules.requestSchema>;
+export type ListSourcesResponse = z.output<typeof apiContract.index.sources.list.responseSchema>;
+export type SearchSourcesResponse = z.output<typeof apiContract.index.sources.search.responseSchema>;
+export type CreateSourceResponse = z.output<typeof apiContract.index.sources.create.responseSchema>;
+export type GetSourceResponse = z.output<typeof apiContract.index.sources.get.responseSchema>;
+export type UpdateSourceResponse = z.output<typeof apiContract.index.sources.update.responseSchema>;
+export type CreateGithubSourceResponse = z.output<typeof apiContract.index.sources.createGithub.responseSchema>;
+export type RecrawlSourceResponse = z.output<typeof apiContract.index.sources.recrawl.responseSchema>;
+export type ListCollectionsResponse = z.output<typeof apiContract.index.collections.list.responseSchema>;
+export type CollectionResponse = z.output<typeof apiContract.index.collections.get.responseSchema>;
+export type CollectionRulesResponse = z.output<typeof apiContract.index.collections.rules.responseSchema>;
 
 export type ResourceRequest = <Schema extends z.ZodType>(
   method: string,
@@ -66,10 +68,15 @@ export function createResourceClients(request: ResourceRequest) {
     });
     return request(endpoint.method, path, { ...options, responseSchema: endpoint.responseSchema });
   }
-  const sources = apiContract.sources;
-  const collections = apiContract.collections;
+  const sources = apiContract.index.sources;
+  const collections = apiContract.index.collections;
   return {
     sources: {
+      subscribe: (sourceId: string, options?: RequestOptions) =>
+        call(sources.subscribe, { ...options, pathParams: { sourceId } }),
+      githubConnections: (options?: RequestOptions) => call(sources.githubConnections, options),
+      analyzeGithub: (input: z.input<typeof sources.analyzeGithub.requestSchema>, options?: RequestOptions) =>
+        call(sources.analyzeGithub, { ...options, body: input }),
       analyze: (input: AnalyzeSourceInput, options?: RequestOptions) =>
         call(sources.analyze, { ...options, body: sources.analyze.requestSchema.parse(input) }),
       getAnalysis: (analysisId: string, options?: RequestOptions) =>

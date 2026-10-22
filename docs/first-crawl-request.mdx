@@ -1,0 +1,197 @@
+---
+title: First Crawl Request
+description: Create a crawl run and retrieve its content with the API.
+---
+
+This walkthrough creates a crawl run, checks its status, and retrieves Markdown. You need a Bulkgrid workspace and an API key with `runs:write`, `runs:read`, and `results:read`.
+
+Create a key in [Settings → API Keys](https://bulkgrid.com/dashboard/settings/api-keys). Workspace owners and admins can manage keys.
+
+## 1. Configure authentication
+
+```bash
+export BULKGRID_API_KEY='bg_live_your_api_key'
+export BULKGRID_BASE_URL='https://bulkgrid.com'
+```
+
+Keep the key in your backend environment. See [Authentication](/authentication) for bearer tokens, OAuth, and access restrictions.
+
+## 2. Create a crawl
+
+Node.js and Python examples use the [Bulkgrid SDKs](/sdk). Set `BULKGRID_API_KEY` in your backend environment; cURL examples also use `BULKGRID_BASE_URL=https://bulkgrid.com`.
+
+<CodeGroup>
+
+```js Node.js
+import { BulkgridClient } from '@bulkgrid/sdk';
+
+const client = new BulkgridClient({
+  apiKey: process.env.BULKGRID_API_KEY ?? '',
+  baseUrl: process.env.BULKGRID_BASE_URL ?? 'https://bulkgrid.com',
+});
+
+const data = await client.crawl({
+  urls: ['https://example.com'],
+  options: {
+    formats: ['markdown'],
+  },
+});
+console.log(data);
+```
+
+```python Python
+import os
+from bulkgrid import BulkgridClient
+
+with BulkgridClient(
+    api_key=os.environ["BULKGRID_API_KEY"],
+    base_url=os.environ.get("BULKGRID_BASE_URL", "https://bulkgrid.com"),
+) as client:
+    data = client.crawl(
+        {"urls": ["https://example.com"], "options": {"formats": ["markdown"]}}
+    )
+    print(data)
+```
+
+```bash cURL
+curl "$BULKGRID_BASE_URL/api/v1/crawl" \
+  -H 'Content-Type: application/json' \
+  -H "x-api-key: $BULKGRID_API_KEY" \
+  -d '{
+    "type": "crawl",
+    "urls": ["https://example.com"],
+    "options": { "formats": ["markdown"] }
+  }'
+```
+
+</CodeGroup>
+
+The response is a run object. Save its `id`; the request starts processing and does not wait for the crawl to finish.
+
+## 3. Check the run
+
+```bash
+export RUN_ID='replace-with-the-returned-run-id'
+```
+
+<CodeGroup>
+
+```js Node.js
+import { BulkgridClient } from '@bulkgrid/sdk';
+
+const client = new BulkgridClient({
+  apiKey: process.env.BULKGRID_API_KEY ?? '',
+  baseUrl: process.env.BULKGRID_BASE_URL ?? 'https://bulkgrid.com',
+});
+
+const data = await client.runs.get(process.env.RUN_ID ?? '');
+console.log(data);
+```
+
+```python Python
+import os
+from bulkgrid import BulkgridClient
+
+with BulkgridClient(
+    api_key=os.environ["BULKGRID_API_KEY"],
+    base_url=os.environ.get("BULKGRID_BASE_URL", "https://bulkgrid.com"),
+) as client:
+    data = client.runs.get(os.environ["RUN_ID"])
+    print(data)
+```
+
+```bash cURL
+curl "$BULKGRID_BASE_URL/api/v1/runs/$RUN_ID" \
+  -H "x-api-key: $BULKGRID_API_KEY"
+```
+
+</CodeGroup>
+
+Poll every few seconds with a maximum wait time. Stop on `completed`, `failed`, or `cancelled`. For failed runs, inspect `last_error` before deciding whether to retry.
+
+## 4. Retrieve results and Markdown
+
+<CodeGroup>
+
+```js Node.js
+import { BulkgridClient } from '@bulkgrid/sdk';
+
+const client = new BulkgridClient({
+  apiKey: process.env.BULKGRID_API_KEY ?? '',
+  baseUrl: process.env.BULKGRID_BASE_URL ?? 'https://bulkgrid.com',
+});
+
+const data = await client.runs.results(process.env.RUN_ID ?? '');
+console.log(data);
+```
+
+```python Python
+import os
+from bulkgrid import BulkgridClient
+
+with BulkgridClient(
+    api_key=os.environ["BULKGRID_API_KEY"],
+    base_url=os.environ.get("BULKGRID_BASE_URL", "https://bulkgrid.com"),
+) as client:
+    data = client.runs.results(os.environ["RUN_ID"])
+    print(data)
+```
+
+```bash cURL
+curl "$BULKGRID_BASE_URL/api/v1/runs/$RUN_ID/results" \
+  -H "x-api-key: $BULKGRID_API_KEY"
+```
+
+</CodeGroup>
+
+Choose an item from `results` and use its `id`:
+
+```bash
+export RESULT_ID='replace-with-a-result-id'
+```
+
+<CodeGroup>
+
+```js Node.js
+import { BulkgridClient } from '@bulkgrid/sdk';
+
+const client = new BulkgridClient({
+  apiKey: process.env.BULKGRID_API_KEY ?? '',
+  baseUrl: process.env.BULKGRID_BASE_URL ?? 'https://bulkgrid.com',
+});
+
+const data = await client.runs.getResultContent(process.env.RUN_ID ?? '', process.env.RESULT_ID ?? '', {
+  type: 'markdown',
+});
+console.log(data);
+```
+
+```python Python
+import os
+from bulkgrid import BulkgridClient
+
+with BulkgridClient(
+    api_key=os.environ["BULKGRID_API_KEY"],
+    base_url=os.environ.get("BULKGRID_BASE_URL", "https://bulkgrid.com"),
+) as client:
+    data = client.runs.get_result_content(
+        os.environ["RUN_ID"], os.environ["RESULT_ID"], {"type": "markdown"}
+    )
+    print(data)
+```
+
+```bash cURL
+curl "$BULKGRID_BASE_URL/api/v1/runs/$RUN_ID/results/$RESULT_ID/content?type=markdown" \
+  -H "x-api-key: $BULKGRID_API_KEY"
+```
+
+</CodeGroup>
+
+The content endpoint returns text. Individual pages can fail even when a run completes, so inspect each result's `error_message`.
+
+## Continue building
+
+- [TypeScript SDK](/sdk) for typed API calls.
+- [Sources](/sources) for a persistent, refreshable search corpus.
+- [First search](/first-search-request) for indexed retrieval.
+- [MCP](/mcp-server) or [CLI](/cli) for AI and terminal connections.

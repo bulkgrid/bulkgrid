@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { registerSourceCommands } from './sources.js';
+import packageMetadata from '../package.json' with { type: 'json' };
 import { Command } from 'commander';
 
 import { CliAuth } from './auth.js';
@@ -8,7 +9,7 @@ import { runInitCommand } from './init.js';
 
 const program = new Command();
 
-program.name('bulkgrid').description('Bulkgrid developer tooling').version('0.1.0');
+program.name('bulkgrid').description('Bulkgrid developer tooling').version(packageMetadata.version);
 
 const auth = new CliAuth();
 

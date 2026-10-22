@@ -23,62 +23,27 @@
         "groups": [
           {
             "group": "Get started",
-            "pages": [
-              "index",
-              "getting-started/quickstart",
-              "getting-started/authentication",
-              "integrations/mcp-server",
-              "getting-started/cli",
-              "getting-started/sdk",
-              "getting-started/playground-quickstart"
-            ]
+            "pages": ["getting-started", "sdk", "cli", "mcp-server"]
           },
           {
-            "group": "Sources and retrieval",
-            "pages": [
-              "introduction/core-concepts",
-              "guides/source-management",
-              "guides/github-sources",
-              "guides/collections-and-access",
-              "guides/collection-rules",
-              "guides/search",
-              "guides/source-recrawl-and-monitoring",
-              "guides/source-documents-and-changes",
-              "guides/source-discovery"
-            ]
+            "group": "Index",
+            "pages": ["sources", "collections", "index"]
           },
           {
-            "group": "Crawl and extract",
-            "pages": ["guides/crawl", "guides/deep-crawl", "guides/extraction", "guides/extract-schema-generation"]
-          },
-          {
-            "group": "Runs and results",
-            "pages": [
-              "getting-started/understanding-runs-and-results",
-              "guides/check-status",
-              "guides/fetch-results",
-              "guides/retry-and-cancel-runs"
-            ]
-          },
-          {
-            "group": "Integrations",
-            "pages": [
-              "integrations/backend-integration",
-              "integrations/rag-and-agent-workflows",
-              "integrations/knowledge-ingestion-workflow",
-              "integrations/customer-facing-search-workflow"
-            ]
+            "group": "More",
+            "pages": ["search", "map", "crawl", "deep-crawl", "extraction", "runs-and-results", "examples"]
           },
           {
             "group": "Access and operations",
             "pages": [
-              "guides/api-key-scopes",
-              "production/plan-gating-and-limits",
-              "production/usage-metrics",
-              "production/reliability-and-retries",
-              "production/troubleshooting",
-              "production/security-and-data-handling",
-              "production/versioning"
+              "authentication",
+              "api-key-scopes",
+              "plan-gating-and-limits",
+              "usage-metrics",
+              "reliability-and-retries",
+              "troubleshooting",
+              "security-and-data-handling",
+              "versioning"
             ]
           }
         ]
@@ -88,7 +53,7 @@
         "groups": [
           {
             "group": "Overview",
-            "pages": ["api-reference/overview"]
+            "pages": ["overview"]
           },
           {
             "group": "Endpoints",
@@ -134,5 +99,219 @@
       "github": "https://github.com/bulkgrid",
       "linkedin": "https://linkedin.com/company/bulkgrid"
     }
-  }
+  },
+  "redirects": [
+    {
+      "source": "/web-search",
+      "destination": "/search"
+    },
+    {
+      "source": "/guides/github-sources",
+      "destination": "/sources"
+    },
+    {
+      "source": "/guides/source-discovery",
+      "destination": "/sources"
+    },
+    {
+      "source": "/guides/source-recrawl-and-monitoring",
+      "destination": "/sources"
+    },
+    {
+      "source": "/guides/collection-rules",
+      "destination": "/collections"
+    },
+    {
+      "source": "/getting-started/understanding-runs-and-results",
+      "destination": "/runs-and-results"
+    },
+    {
+      "source": "/guides/check-status",
+      "destination": "/runs-and-results"
+    },
+    {
+      "source": "/guides/fetch-results",
+      "destination": "/runs-and-results"
+    },
+    {
+      "source": "/guides/retry-and-cancel-runs",
+      "destination": "/runs-and-results"
+    },
+    {
+      "source": "/integrations/backend-integration",
+      "destination": "/examples"
+    },
+    {
+      "source": "/integrations/rag-and-agent-workflows",
+      "destination": "/examples"
+    },
+    {
+      "source": "/integrations/knowledge-ingestion-workflow",
+      "destination": "/examples"
+    },
+    {
+      "source": "/integrations/customer-facing-search-workflow",
+      "destination": "/examples"
+    },
+    {
+      "source": "/getting-started/quickstart",
+      "destination": "/getting-started"
+    },
+    {
+      "source": "/guides/extract-schema-generation",
+      "destination": "/extraction"
+    },
+    {
+      "source": "/guides/source-documents-and-changes",
+      "destination": "/sources"
+    },
+    {
+      "source": "/introduction/core-concepts",
+      "destination": "/getting-started"
+    },
+    {
+      "source": "/introduction/how-bulkgrid-works",
+      "destination": "/how-bulkgrid-works"
+    },
+    {
+      "source": "/introduction/why-bulkgrid",
+      "destination": "/why-bulkgrid"
+    },
+    {
+      "source": "/api-reference/overview",
+      "destination": "/overview"
+    },
+    {
+      "source": "/api-reference/crawl-endpoints",
+      "destination": "/crawl-endpoints"
+    },
+    {
+      "source": "/api-reference/search-endpoints",
+      "destination": "/search-endpoints"
+    },
+    {
+      "source": "/api-reference/extraction-endpoints",
+      "destination": "/extraction-endpoints"
+    },
+    {
+      "source": "/api-reference/runs-endpoints",
+      "destination": "/runs-endpoints"
+    },
+    {
+      "source": "/api-reference/results-endpoints",
+      "destination": "/results-endpoints"
+    },
+    {
+      "source": "/integrations/examples",
+      "destination": "/examples"
+    },
+    {
+      "source": "/integrations/mcp-server",
+      "destination": "/mcp-server"
+    },
+    {
+      "source": "/getting-started/playground-quickstart",
+      "destination": "/playground"
+    },
+    {
+      "source": "/getting-started/sdk",
+      "destination": "/sdk"
+    },
+    {
+      "source": "/getting-started/cli",
+      "destination": "/cli"
+    },
+    {
+      "source": "/getting-started/authentication",
+      "destination": "/authentication"
+    },
+    {
+      "source": "/getting-started/first-extraction-request",
+      "destination": "/first-extraction-request"
+    },
+    {
+      "source": "/getting-started/first-crawl-request",
+      "destination": "/first-crawl-request"
+    },
+    {
+      "source": "/getting-started/first-search-request",
+      "destination": "/first-search-request"
+    },
+    {
+      "source": "/guides/extraction",
+      "destination": "/extraction"
+    },
+    {
+      "source": "/guides/search",
+      "destination": "/index"
+    },
+    {
+      "source": "/guides/api-key-scopes",
+      "destination": "/api-key-scopes"
+    },
+    {
+      "source": "/guides/collections-and-access",
+      "destination": "/collections"
+    },
+    {
+      "source": "/guides/crawl",
+      "destination": "/crawl"
+    },
+    {
+      "source": "/guides/deep-crawl",
+      "destination": "/deep-crawl"
+    },
+    {
+      "source": "/guides/runs-and-results",
+      "destination": "/runs-and-results"
+    },
+    {
+      "source": "/guides/source-management",
+      "destination": "/sources"
+    },
+    {
+      "source": "/production/reliability-and-retries",
+      "destination": "/reliability-and-retries"
+    },
+    {
+      "source": "/production/plan-gating-and-limits",
+      "destination": "/plan-gating-and-limits"
+    },
+    {
+      "source": "/production/timeouts-and-long-running-jobs",
+      "destination": "/timeouts-and-long-running-jobs"
+    },
+    {
+      "source": "/production/security-and-data-handling",
+      "destination": "/security-and-data-handling"
+    },
+    {
+      "source": "/production/rate-limits-and-quotas",
+      "destination": "/rate-limits-and-quotas"
+    },
+    {
+      "source": "/production/api-key-security",
+      "destination": "/api-key-security"
+    },
+    {
+      "source": "/production/versioning",
+      "destination": "/versioning"
+    },
+    {
+      "source": "/production/faq",
+      "destination": "/faq"
+    },
+    {
+      "source": "/production/usage-metrics",
+      "destination": "/usage-metrics"
+    },
+    {
+      "source": "/production/troubleshooting",
+      "destination": "/troubleshooting"
+    },
+    {
+      "source": "/typescript",
+      "destination": "/sdk"
+    }
+  ]
 }

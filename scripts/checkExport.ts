@@ -4,7 +4,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const CHECKER_PATH = resolve(fileURLToPath(import.meta.url));
 const IGNORED_DIRECTORY_NAMES = new Set(['node_modules', '.git']);
-const SCANNED_EXTENSIONS = new Set(['.ts', '.js', '.mjs', '.json']);
+const SCANNED_EXTENSIONS = new Set(['.ts', '.js', '.mjs', '.json', '.py', '.toml']);
 const PRIVATE_REFERENCE_PATTERNS = [/@repo\//, /(?:\/Users\/|\/private\/|\/tmp\/bulkgrid-contracts)/];
 
 function isEnvironmentFile(name: string): boolean {

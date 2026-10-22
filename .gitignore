@@ -5,4 +5,13 @@ node_modules/
 *.tgz
 coverage/
 .DS_Store
+
+# Python SDK
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
 plans/

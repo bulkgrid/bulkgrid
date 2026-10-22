@@ -1,0 +1,124 @@
+---
+title: Introduction
+description: Add a source and make your first search with Bulkgrid.
+---
+
+Bulkgrid turns websites and GitHub repositories into searchable knowledge for your applications and AI agents.
+
+## 1. Add a source
+
+Open [Sources](https://bulkgrid.com/dashboard/sources) in your workspace and add a website or GitHub repository. Start with a small source or a focused section, then wait for its documents to finish indexing.
+
+Already have indexed sources? Use one of those for the next step.
+
+## 2. Try a search
+
+Open the dashboard **Playground**, choose **Search**, and ask a question about your source. The results contain relevant passages and their source URLs.
+
+If no results appear, check that indexing has finished and that the source is accessible to your workspace. See [Sources](/sources) for help.
+
+## 3. Connect your application or agent
+
+Choose how you want to use Bulkgrid:
+
+<CardGroup cols={3}>
+  <Card title="SDK" icon="braces" href="/sdk">
+    Search and manage sources from your application.
+  </Card>
+  <Card title="CLI" icon="terminal" href="/cli">
+    Manage sources and configure AI clients from your terminal.
+  </Card>
+  <Card title="MCP" icon="plug" href="/mcp-server">
+    Let your AI agent search your indexed content.
+  </Card>
+</CardGroup>
+
+### Connect your coding agent
+
+Choose your agent for setup and browser sign-in:
+
+<div className="grid grid-cols-2 gap-3 sm:grid-cols-4 not-prose">
+  <a
+    href="/mcp-server#client-setup"
+    className="flex flex-col items-center gap-2 rounded-xl border border-gray-200 p-4 text-sm font-medium text-gray-900 dark:border-gray-800 dark:text-gray-100"
+  >
+    <img src="/logo/clients/codex.svg" alt="" width="32" height="32" className="h-8 w-8" />
+    <span>Codex</span>
+  </a>
+  <a
+    href="/mcp-server#client-setup"
+    className="flex flex-col items-center gap-2 rounded-xl border border-gray-200 p-4 text-sm font-medium text-gray-900 dark:border-gray-800 dark:text-gray-100"
+  >
+    <img src="/logo/clients/claude.svg" alt="" width="32" height="32" className="h-8 w-8" />
+    <span>Claude Code</span>
+  </a>
+  <a
+    href="/mcp-server#client-setup"
+    className="flex flex-col items-center gap-2 rounded-xl border border-gray-200 p-4 text-sm font-medium text-gray-900 dark:border-gray-800 dark:text-gray-100"
+  >
+    <img src="/logo/clients/cursor.svg" alt="" width="32" height="32" className="h-8 w-8" />
+    <span>Cursor</span>
+  </a>
+  <a
+    href="/mcp-server#client-setup"
+    className="flex flex-col items-center gap-2 rounded-xl border border-gray-200 p-4 text-sm font-medium text-gray-900 dark:border-gray-800 dark:text-gray-100"
+  >
+    <img src="/logo/clients/opencode.svg" alt="" width="32" height="32" className="h-8 w-8" />
+    <span>OpenCode</span>
+  </a>
+</div>
+
+### Call the API directly
+
+Create an API key with `search:query` in [Settings → API Keys](https://bulkgrid.com/dashboard/settings/api-keys). Workspace owners and admins can create keys. Keep your key in your backend environment.
+
+```bash
+export BULKGRID_API_KEY='bg_live_your_api_key'
+```
+
+Node.js and Python examples use the [Bulkgrid SDKs](/sdk). Set `BULKGRID_API_KEY` in your backend environment; cURL examples also use `BULKGRID_BASE_URL=https://bulkgrid.com`.
+
+<CodeGroup>
+
+```js Node.js
+import { BulkgridClient } from '@bulkgrid/sdk';
+
+const client = new BulkgridClient({
+  apiKey: process.env.BULKGRID_API_KEY ?? '',
+  baseUrl: process.env.BULKGRID_BASE_URL ?? 'https://bulkgrid.com',
+});
+
+const data = await client.index.search({
+  query: 'How do I get started?',
+  limit: 3,
+});
+console.log(data);
+```
+
+```python Python
+import os
+from bulkgrid import BulkgridClient
+
+with BulkgridClient(
+    api_key=os.environ["BULKGRID_API_KEY"],
+    base_url=os.environ.get("BULKGRID_BASE_URL", "https://bulkgrid.com"),
+) as client:
+    data = client.index.search({"query": "How do I get started?", "limit": 3})
+    print(data)
+```
+
+```bash cURL
+curl 'https://bulkgrid.com/api/v1/index/search' \
+  -H 'Content-Type: application/json' \
+  -H "x-api-key: $BULKGRID_API_KEY" \
+  -d '{
+    "query": "How do I get started?",
+    "limit": 3
+  }'
+```
+
+</CodeGroup>
+
+Replace the query with a question your source can answer. Read the passages in `results` and follow their `url` fields to the original pages.
+
+For access settings, see [Authentication](/authentication). To process individual URLs without creating a searchable source, see [Crawl](/crawl) or [Extraction](/extraction).

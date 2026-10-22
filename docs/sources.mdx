@@ -1,0 +1,572 @@
+---
+title: Sources
+description: Add, analyze, and refresh website and GitHub sources.
+icon: database
+---
+
+A source is a persistent content origin with documents, indexing state, and refresh history. Sources can represent websites or [GitHub repositories](/sources).
+
+## Public and private sources
+
+The Sources page and collection source picker have **Public** and **Private** tabs.
+
+| Source                       | Access                                                    | Removing it                                                                             |
+| ---------------------------- | --------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| Public website or repository | Shared catalog, available immediately without subscribing | Remove it from a collection to stop agent searches; the shared source remains available |
+| Private source               | Owned by your workspace                                   | Delete it to remove its content and initiate cleanup                                    |
+
+Collections define what agents search. Include sources, folders, or pages in a collection, then authorize that collection for an API key or connected app. Existing public content is reused without another crawl. Old public subscription page/path restrictions no longer constrain collections.
+
+Shared public source settings can be edited by owners and admins of the creating workspace with an active Pro, Growth, or Enterprise plan, and by Bulkgrid admins. These edits require a signed-in user; API keys and OAuth tokens cannot change shared settings. Every public source has one shared refresh schedule, governed by the same editing permissions. Other workspaces choose what agents search through collection rules.
+
+For domain sources, identifiers normalize to the URL origin. `https://docs.example.com/foo` and `https://docs.example.com/bar` identify the same source root; choose path filters to define a site section.
+
+## Analyze a website
+
+Source analysis inspects candidate paths and estimates URL coverage. It can start a crawl run and consume resources; authorize its scope before starting it. The standalone synchronous discovery endpoint has been removed.
+
+### Start analysis
+
+Requires `sources:discover` and `runs:write`:
+
+Node.js and Python examples use the [Bulkgrid SDKs](/sdk). Set `BULKGRID_API_KEY` in your backend environment; cURL examples also use `BULKGRID_BASE_URL=https://bulkgrid.com`. CLI examples require the [Bulkgrid CLI](/cli) and an API key with the scopes listed below; browser login does not grant source-management permissions. Set `SOURCE_ID`, `ANALYSIS_ID`, and `RUN_ID` from returned IDs as needed.
+
+<CodeGroup>
+
+```js Node.js
+import { BulkgridClient } from '@bulkgrid/sdk';
+
+const client = new BulkgridClient({
+  apiKey: process.env.BULKGRID_API_KEY ?? '',
+  baseUrl: process.env.BULKGRID_BASE_URL ?? 'https://bulkgrid.com',
+});
+
+const data = await client.index.sources.analyze({
+  url: 'https://example.com',
+});
+console.log(data);
+```
+
+```python Python
+import os
+from bulkgrid import BulkgridClient
+
+with BulkgridClient(
+    api_key=os.environ["BULKGRID_API_KEY"],
+    base_url=os.environ.get("BULKGRID_BASE_URL", "https://bulkgrid.com"),
+) as client:
+    data = client.index.sources.analyze({"url": "https://example.com"})
+    print(data)
+```
+
+```bash cURL
+curl "$BULKGRID_BASE_URL/api/v1/index/sources/discover/analyses" \
+  -H 'Content-Type: application/json' \
+  -H "x-api-key: $BULKGRID_API_KEY" \
+  -d '{"url":"https://example.com"}'
+```
+
+```bash CLI
+bulkgrid sources analyze https://example.com --url "${BULKGRID_BASE_URL:-https://bulkgrid.com}"
+```
+
+</CodeGroup>
+
+Save the returned analysis `id` and any `runId`. Analysis does not create a source subscription. The analysis endpoints retain their existing paths under `/sources/discover/analyses`.
+
+### Read progress and results
+
+Requires `sources:discover`:
+
+<CodeGroup>
+
+```js Node.js
+import { BulkgridClient } from '@bulkgrid/sdk';
+
+const client = new BulkgridClient({
+  apiKey: process.env.BULKGRID_API_KEY ?? '',
+  baseUrl: process.env.BULKGRID_BASE_URL ?? 'https://bulkgrid.com',
+});
+
+const data = await client.index.sources.getAnalysis(process.env.ANALYSIS_ID ?? '');
+console.log(data);
+```
+
+```python Python
+import os
+from bulkgrid import BulkgridClient
+
+with BulkgridClient(
+    api_key=os.environ["BULKGRID_API_KEY"],
+    base_url=os.environ.get("BULKGRID_BASE_URL", "https://bulkgrid.com"),
+) as client:
+    data = client.index.sources.get_analysis(os.environ["ANALYSIS_ID"])
+    print(data)
+```
+
+```bash cURL
+curl "$BULKGRID_BASE_URL/api/v1/index/sources/discover/analyses/$ANALYSIS_ID" \
+  -H "x-api-key: $BULKGRID_API_KEY"
+```
+
+```bash CLI
+bulkgrid sources analysis-status "$ANALYSIS_ID" --url "${BULKGRID_BASE_URL:-https://bulkgrid.com}"
+```
+
+</CodeGroup>
+
+States are `crawling`, `analyzing`, `completed`, `partial`, and `failed`. Results include the URL, estimated URL count, discovered paths, level summaries, warnings, and errors. Counts may be unavailable while work is in progress. `partial` indicates incomplete coverage; estimates are not guaranteed storage or credit quotes.
+
+Use bounded polling and preserve the ID if the wait expires. Do not blindly resubmit a start request after a timeout: work may already have begun.
+
+### Choose ingestion boundaries
+
+Use the analysis to select relevant paths or pages before creating a source. The path recommendation flow can help choose include/exclude rules; it is distinct from starting analysis and from source creation.
+
+## Create or reuse a website source
+
+Requires `sources:write`. Plan limits apply: Free can use existing public sources, while creating a new public source requires Pro. Private-source creation also requires Pro. Source counts are uncapped; processing, retrieval, storage, and concurrency allowances still apply.
+
+<CodeGroup>
+
+```js Node.js
+import { BulkgridClient } from '@bulkgrid/sdk';
+
+const client = new BulkgridClient({
+  apiKey: process.env.BULKGRID_API_KEY ?? '',
+  baseUrl: process.env.BULKGRID_BASE_URL ?? 'https://bulkgrid.com',
+});
+
+const data = await client.index.sources.create({
+  type: 'domain',
+  identifier: 'https://example.com',
+  visibility: 'public',
+  source_mode: 'discover',
+  crawl_config: {
+    includePaths: ['/docs'],
+  },
+});
+console.log(data);
+```
+
+```python Python
+import os
+from bulkgrid import BulkgridClient
+
+with BulkgridClient(
+    api_key=os.environ["BULKGRID_API_KEY"],
+    base_url=os.environ.get("BULKGRID_BASE_URL", "https://bulkgrid.com"),
+) as client:
+    data = client.index.sources.create(
+        {
+            "type": "domain",
+            "identifier": "https://example.com",
+            "visibility": "public",
+            "source_mode": "discover",
+            "crawl_config": {"includePaths": ["/docs"]},
+        }
+    )
+    print(data)
+```
+
+```bash cURL
+curl "$BULKGRID_BASE_URL/api/v1/index/sources" \
+  -H 'Content-Type: application/json' \
+  -H "x-api-key: $BULKGRID_API_KEY" \
+  -d '{
+    "type": "domain",
+    "identifier": "https://example.com",
+    "visibility": "public",
+    "source_mode": "discover",
+    "crawl_config": { "includePaths": ["/docs"] }
+  }'
+```
+
+```bash CLI
+bulkgrid sources add --input '{
+  "type": "domain",
+  "identifier": "https://example.com",
+  "visibility": "public",
+  "source_mode": "discover",
+  "crawl_config": {
+    "includePaths": [
+      "/docs"
+    ]
+  }
+}' --url "${BULKGRID_BASE_URL:-https://bulkgrid.com}"
+```
+
+</CodeGroup>
+
+The response contains `source` and `created`. Save `source.id`. `created: false` can indicate reuse of an existing source. Creating the source record is not proof that documents are indexed; inspect [source status](/sources).
+
+## Choose the content boundary
+
+- `discover` discovers content using the source's path configuration.
+- `selected_pages` processes explicitly selected document URLs. Store them in `crawl_config.selectedUrls`.
+- Use collection rules to curate the content each application can retrieve.
+
+For public sources, choose your searchable folders and pages in collections. The shared refresh schedule and crawl options apply to everyone and can only be changed by authorized source editors. Collection rules control retrieval independently.
+
+## Read, update, and remove
+
+| Method and path                                 | Scope                         | Purpose                                                                                                                |
+| ----------------------------------------------- | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/v1/index/sources`                     | `sources:read`                | List accessible sources; use `visibility=public` or `visibility=private`, `limit`, and `offset` for paginated catalogs |
+| `GET /api/v1/index/sources/{sourceId}`          | `sources:read`                | Read a source in the current workspace                                                                                 |
+| `PATCH /api/v1/index/sources/{sourceId}`        | `sources:write`               | Update supported configuration                                                                                         |
+| `DELETE /api/v1/index/sources/{sourceId}`       | `sources:delete`              | Delete a workspace-owned private source                                                                                |
+| `POST /api/v1/index/sources/{sourceId}/recrawl` | `sources:write`, `runs:write` | Request a manual refresh; paid-plan restrictions apply                                                                 |
+
+See [documents and changes](#documents-and-changes) to inspect indexed content and [Collections](/collections) to control retrieval.
+
+## GitHub repositories
+
+GitHub sources synchronize repository Markdown and MDX files directly. Pro workspaces can create public or private sources. Public sources use public repositories and are shared across workspaces, with public source pages. Private sources stay within their workspace and can use private GitHub repositories through a GitHub App connection. Free workspaces can use existing public sources in their collection.
+
+### Create a source
+
+Requires `sources:write`. Use a repository URL in the form `https://github.com/{owner}/{repo}`.
+
+<CodeGroup>
+
+```js Node.js
+import { BulkgridClient } from '@bulkgrid/sdk';
+
+const client = new BulkgridClient({
+  apiKey: process.env.BULKGRID_API_KEY ?? '',
+  baseUrl: process.env.BULKGRID_BASE_URL ?? 'https://bulkgrid.com',
+});
+
+const data = await client.index.sources.createGithub({
+  visibility: 'public',
+  repositoryUrl: 'https://github.com/microsoft/TypeScript',
+  includePaths: ['docs'],
+  excludePaths: [],
+  crawl_interval: 'weekly',
+});
+console.log(data);
+```
+
+```python Python
+import os
+from bulkgrid import BulkgridClient
+
+with BulkgridClient(
+    api_key=os.environ["BULKGRID_API_KEY"],
+    base_url=os.environ.get("BULKGRID_BASE_URL", "https://bulkgrid.com"),
+) as client:
+    data = client.index.sources.create_github(
+        {
+            "visibility": "public",
+            "repositoryUrl": "https://github.com/microsoft/TypeScript",
+            "includePaths": ["docs"],
+            "excludePaths": [],
+            "crawl_interval": "weekly",
+        }
+    )
+    print(data)
+```
+
+```bash cURL
+curl "$BULKGRID_BASE_URL/api/v1/index/sources/github" \
+  -H 'Content-Type: application/json' \
+  -H "x-api-key: $BULKGRID_API_KEY" \
+  -d '{
+    "visibility": "public",
+            "repositoryUrl": "https://github.com/microsoft/TypeScript",
+    "includePaths": ["docs"],
+    "excludePaths": [],
+    "crawl_interval": "weekly"
+  }'
+```
+
+```bash CLI
+bulkgrid sources add-github --input '{"repositoryUrl":"https://github.com/microsoft/TypeScript","visibility":"public","includePaths":["docs"],"crawl_interval":"weekly"}'
+```
+
+</CodeGroup>
+
+New sources return `202` with `source`, `run`, and `dispatchDeferred`. A deferred dispatch means the job was saved and is awaiting dispatch; avoid creating a duplicate source. An existing public repository returns `200` with `created: false` and `run: null`, reuses the source, and retains the creator's branch and path settings. An existing private repository in the workspace returns `409`.
+
+Public sources do not require subscription. The legacy subscribe endpoint remains compatible and returns the available source without creating a subscription or starting a crawl. Add the source to a collection to make it searchable by agents.
+
+### Private repositories
+
+In **Settings → Integrations**, a workspace owner or admin connects GitHub and selects permitted repositories. Then open **Add source → GitHub**, choose **Private**, and select a connected repository. If GitHub is not connected, the source form links to integration settings. Private repository sources always stay private to the workspace.
+
+For the API, list connections using Node `client.index.sources.githubConnections()`, Python `client.index.sources.github_connections()`, `GET /api/v1/integrations/github/connections`, or `bulkgrid sources github-connections`. This requires `sources:read`. Use the connection ID belonging to the selected repository:
+
+<CodeGroup>
+
+```js Node.js
+const result = await client.index.sources.createGithub({
+  repositoryUrl: 'https://github.com/your-org/private-docs',
+  visibility: 'private',
+  connection_id: connectionId,
+  includePaths: ['docs'],
+  crawl_interval: 'weekly',
+});
+```
+
+```python Python
+result = client.index.sources.create_github({
+    "repositoryUrl": "https://github.com/your-org/private-docs",
+    "visibility": "private",
+    "connection_id": connection_id,
+    "includePaths": ["docs"],
+    "crawl_interval": "weekly",
+})
+```
+
+```bash cURL
+curl "$BULKGRID_BASE_URL/api/v1/index/sources/github" \
+  -H "x-api-key: $BULKGRID_API_KEY" \
+  -H 'Content-Type: application/json' \
+  -d '{"repositoryUrl":"https://github.com/your-org/private-docs","visibility":"private","connection_id":"11111111-1111-4111-8111-111111111111","includePaths":["docs"],"crawl_interval":"weekly"}'
+```
+
+```bash CLI
+bulkgrid sources add-github --input '{"repositoryUrl":"https://github.com/your-org/private-docs","visibility":"private","connection_id":"11111111-1111-4111-8111-111111111111","includePaths":["docs"],"crawl_interval":"weekly"}'
+```
+
+</CodeGroup>
+
+Pass the same `connection_id` to Node `client.index.sources.analyzeGithub({ repositoryUrl, connection_id })`, Python `client.index.sources.analyze_github(...)`, `POST /api/v1/index/sources/github/analyze`, or `bulkgrid sources analyze-github --input '{...}'` to analyze a private repository before indexing. Analysis inspects the repository tree and sends candidate file paths to the model to suggest documentation boundaries.
+
+Disconnecting a GitHub connection stops future ingestion. Previously indexed documents remain private to the workspace until you delete their source. Changes to the App's permitted repositories require reconnecting to refresh Bulkgrid's selection list.
+
+### Configuration
+
+| Field                          | Purpose                                                                                            |
+| ------------------------------ | -------------------------------------------------------------------------------------------------- |
+| `repositoryUrl`                | Required GitHub repository URL                                                                     |
+| `visibility`                   | `public` to share a public repository; `private` (default) to restrict it to the workspace         |
+| `connection_id`                | Workspace GitHub App connection; required for private repositories and rejected for public sources |
+| `ref`                          | Optional repository ref; use the repository default when omitted                                   |
+| `includePaths`, `excludePaths` | Repository path filters                                                                            |
+| `label`                        | Optional display name                                                                              |
+| `canonical_url`                | Optional related website URL for source identity and preview                                       |
+| `crawl_interval`               | `daily`, `weekly`, or `monthly`; default `weekly`                                                  |
+
+A canonical website URL does not replace the repository as the source of indexed content. The website preview can complete independently of repository synchronization.
+
+### Switch website documentation to GitHub
+
+Web and GitHub sources remain separate. After a GitHub source successfully finishes indexing, its canonical website path becomes unavailable for new web selections. For example, a GitHub source with canonical URL `https://react.email/docs` reserves `/docs` while other website paths remain selectable. Public GitHub sources reserve their paths across workspaces; private GitHub sources only affect their own workspace.
+
+Existing web selections continue working. On the web source page, choose **Review and switch**, select the indexed GitHub folders, and confirm. Bulkgrid adds the GitHub source to your workspace and removes only the overlapping web selection in one transaction. If the GitHub source is already added, its existing selection is kept.
+
+Open the suggested GitHub source, add the desired folders to a collection, and remove any web-source rules you no longer need. GitHub folder paths may differ from website URLs.
+
+### Monitor and refresh
+
+Repository runs have `type: "source_sync"`. Poll the run and source status, and inspect indexed document counts before using search.
+
+Use `POST /api/v1/index/sources/{sourceId}/recrawl` for a manual sync. It requires `sources:write` and `runs:write`, plus an active paid plan. For GitHub sources this starts repository synchronization, not a website deep crawl.
+
+Add the source to a collection and authorize that collection for your application or AI client. See [Collections](/collections).
+
+## Refresh and monitor
+
+### Request a manual refresh
+
+Requires `sources:write` and `runs:write`. Manual refresh requires an active or trialing paid plan; otherwise the API returns `403` with `LIMIT_MANUAL_REINDEX`.
+
+<CodeGroup>
+
+```js Node.js
+import { BulkgridClient } from '@bulkgrid/sdk';
+
+const client = new BulkgridClient({
+  apiKey: process.env.BULKGRID_API_KEY ?? '',
+  baseUrl: process.env.BULKGRID_BASE_URL ?? 'https://bulkgrid.com',
+});
+
+const data = await client.index.sources.recrawl(process.env.SOURCE_ID ?? '');
+console.log(data);
+```
+
+```python Python
+import os
+from bulkgrid import BulkgridClient
+
+with BulkgridClient(
+    api_key=os.environ["BULKGRID_API_KEY"],
+    base_url=os.environ.get("BULKGRID_BASE_URL", "https://bulkgrid.com"),
+) as client:
+    data = client.index.sources.recrawl(os.environ["SOURCE_ID"])
+    print(data)
+```
+
+```bash cURL
+curl -X POST "$BULKGRID_BASE_URL/api/v1/index/sources/$SOURCE_ID/recrawl" \
+  -H "x-api-key: $BULKGRID_API_KEY"
+```
+
+```bash CLI
+bulkgrid sources recrawl "$SOURCE_ID" --url "${BULKGRID_BASE_URL:-https://bulkgrid.com}"
+```
+
+</CodeGroup>
+
+The response identifies the source and run. Inspect the returned run rather than assuming a refresh has already completed.
+
+| Source                    | Refresh behavior                                                                                |
+| ------------------------- | ----------------------------------------------------------------------------------------------- |
+| Website, `discover`       | Deep crawl using the source's crawl configuration                                               |
+| Website, `selected_pages` | Crawl the selected document URLs; the source identifier is the fallback when no URLs are stored |
+| GitHub repository         | A `source_sync` run for repository content                                                      |
+
+A shared source remains shared when refreshed. Refreshing it does not create a private copy for the requesting workspace.
+
+### Scheduled refresh
+
+Website source configuration supports `crawl_interval` and, for `custom`, `custom_interval_minutes`. GitHub creation supports `daily`, `weekly`, and `monthly`. Available frequencies depend on the plan; handle returned plan-limit errors rather than assuming every interval is available.
+
+### Check source status
+
+Requires `sources:read`:
+
+<CodeGroup>
+
+```js Node.js
+import { BulkgridClient } from '@bulkgrid/sdk';
+
+const client = new BulkgridClient({
+  apiKey: process.env.BULKGRID_API_KEY ?? '',
+  baseUrl: process.env.BULKGRID_BASE_URL ?? 'https://bulkgrid.com',
+});
+
+const data = await client.index.sources.status(process.env.SOURCE_ID ?? '');
+console.log(data);
+```
+
+```python Python
+import os
+from bulkgrid import BulkgridClient
+
+with BulkgridClient(
+    api_key=os.environ["BULKGRID_API_KEY"],
+    base_url=os.environ.get("BULKGRID_BASE_URL", "https://bulkgrid.com"),
+) as client:
+    data = client.index.sources.status(os.environ["SOURCE_ID"])
+    print(data)
+```
+
+```bash cURL
+curl "$BULKGRID_BASE_URL/api/v1/index/sources/$SOURCE_ID/status" \
+  -H "x-api-key: $BULKGRID_API_KEY"
+```
+
+```bash CLI
+bulkgrid sources status "$SOURCE_ID" --url "${BULKGRID_BASE_URL:-https://bulkgrid.com}"
+```
+
+</CodeGroup>
+
+The status includes `isCrawling`, `latestStatus`, `latestError`, `totalSize`, `totalItems`, and `indexedItems`. Use indexed counts and errors to distinguish ingestion progress from searchable content.
+
+Use `GET /api/v1/index/sources/{sourceId}/runs` with `runs:read` for history. Use [run status](/runs-and-results) to inspect a particular job and [source documents](#documents-and-changes) to inspect its content.
+
+## Documents and changes
+
+Requires `sources:read` and workspace ownership for private sources; public sources are immediately available.
+
+### List documents
+
+<CodeGroup>
+
+```js Node.js
+import { BulkgridClient } from '@bulkgrid/sdk';
+
+const client = new BulkgridClient({
+  apiKey: process.env.BULKGRID_API_KEY ?? '',
+  baseUrl: process.env.BULKGRID_BASE_URL ?? 'https://bulkgrid.com',
+});
+
+const data = await client.index.sources.documents(process.env.SOURCE_ID ?? '', {
+  parent: '/',
+  offset: 0,
+  limit: 50,
+});
+console.log(data);
+```
+
+```python Python
+import os
+from bulkgrid import BulkgridClient
+
+with BulkgridClient(
+    api_key=os.environ["BULKGRID_API_KEY"],
+    base_url=os.environ.get("BULKGRID_BASE_URL", "https://bulkgrid.com"),
+) as client:
+    data = client.index.sources.documents(
+        os.environ["SOURCE_ID"], {"parent": "/", "offset": 0, "limit": 50}
+    )
+    print(data)
+```
+
+```bash cURL
+curl "$BULKGRID_BASE_URL/api/v1/index/sources/$SOURCE_ID/documents?parent=/&offset=0&limit=50" \
+  -H "x-api-key: $BULKGRID_API_KEY"
+```
+
+</CodeGroup>
+
+The response contains `documents`, `parent`, `nextOffset`, `limit`, and `total`. Continue from `nextOffset` until it is `null`. The default limit is `50`, capped at `100`. Use `parent` to browse a source path; `withTotal` is not required.
+
+Documents include source content identifiers and metadata useful for inspecting crawl and indexing state. A source document ID is distinct from a run result ID.
+
+### Browse folders
+
+Use `GET /api/v1/index/sources/{sourceId}/folders?parent=/` to browse folders under a path. Use folder or URL [collection rules](/collections) to curate content for retrieval.
+
+### Inspect a run's changes
+
+The `runId` query parameter is required:
+
+<CodeGroup>
+
+```js Node.js
+import { BulkgridClient } from '@bulkgrid/sdk';
+
+const client = new BulkgridClient({
+  apiKey: process.env.BULKGRID_API_KEY ?? '',
+  baseUrl: process.env.BULKGRID_BASE_URL ?? 'https://bulkgrid.com',
+});
+
+const data = await client.index.sources.changes(process.env.SOURCE_ID ?? '', {
+  runId: process.env.RUN_ID ?? '',
+  kind: 'changed',
+  offset: 0,
+  limit: 50,
+});
+console.log(data);
+```
+
+```python Python
+import os
+from bulkgrid import BulkgridClient
+
+with BulkgridClient(
+    api_key=os.environ["BULKGRID_API_KEY"],
+    base_url=os.environ.get("BULKGRID_BASE_URL", "https://bulkgrid.com"),
+) as client:
+    data = client.index.sources.changes(
+        os.environ["SOURCE_ID"],
+        {"runId": os.environ["RUN_ID"], "kind": "changed", "offset": 0, "limit": 50},
+    )
+    print(data)
+```
+
+```bash cURL
+curl "$BULKGRID_BASE_URL/api/v1/index/sources/$SOURCE_ID/changes?runId=$RUN_ID&kind=changed&offset=0&limit=50" \
+  -H "x-api-key: $BULKGRID_API_KEY"
+```
+
+</CodeGroup>
+
+`kind` accepts `added`, `changed`, or `removed`, and defaults to `changed`. The default limit is `50`, capped at `500`. The response contains `documents`, `total`, `nextOffset`, and `limit`.
+
+Use `GET /api/v1/index/sources/{sourceId}/runs` with `runs:read` to find the relevant source run. Changes are scoped to the requested run, not an unspecified latest comparison.

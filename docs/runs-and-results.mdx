@@ -1,0 +1,372 @@
+---
+title: Runs and results
+description: Monitor asynchronous jobs, retrieve outputs, and retry or cancel work.
+icon: activity
+---
+
+Most Bulkgrid write-style workflows are run-based. Instead of returning the full output immediately, the API creates a run that you inspect and retrieve results from.
+
+## When you will work with runs
+
+You should expect run lifecycle handling for:
+
+- live web, image, and news searches (`search`)
+- website mapping (`map`)
+- extraction requests
+- crawl requests
+- deep crawl requests
+- repository synchronization (`source_sync`)
+- generic run creation through `POST /api/v1/runs`
+
+Indexed search (`POST /api/v1/index/search`) returns results directly without creating a run. Live search (`POST /api/v1/search`) returns ranked results immediately with a `run` reference. Its Search run saves the results and tracks optional page crawling.
+
+## Run object basics
+
+A run response includes fields that help you monitor progress and operational state.
+
+Important fields:
+
+- `id`: the run identifier used for later requests
+- `status`: current lifecycle state
+- `type`: `search`, `map`, `crawl`, `deep_crawl`, `extract`, or `source_sync`
+- `search`: saved query, result type, ranked results, count, and warnings on Search run detail responses
+- `urls`: URLs associated with the run
+- `queued`, `in_progress`, `done`, `failed`: counters for work distribution
+- `created_at`, `started_at`, `completed_at`, `updated_at`: timing fields
+- `last_error`, `error_code`, `error_count`: failure context
+
+## Status values
+
+The current API exposes these run statuses:
+
+- `pending`: the run has been accepted but work has not started yet
+- `processing`: the run is actively being worked on
+- `completed`: the run finished successfully enough for results to be retrieved
+- `failed`: the run ended in failure
+- `cancelled`: the run was cancelled before completion
+
+## Run lifecycle
+
+1. Create a run with `POST /api/v1/extract`, `POST /api/v1/crawl`, or `POST /api/v1/deep-crawl`.
+2. Store the returned `id`.
+3. Poll `GET /api/v1/runs/{runId}` until the run reaches a terminal state.
+4. If the status is `completed`, call `GET /api/v1/runs/{runId}/results`.
+5. If needed, retrieve content or screenshots from individual results.
+6. If the run fails, inspect error fields and decide whether to retry.
+
+## Check run status
+
+Node.js and Python examples use the [Bulkgrid SDKs](/sdk). Set `BULKGRID_API_KEY` in your backend environment; cURL examples also use `BULKGRID_BASE_URL=https://bulkgrid.com`. Set `RUN_ID` and `RESULT_ID` to IDs returned by your requests.
+
+<CodeGroup>
+
+```js Node.js
+import { BulkgridClient } from '@bulkgrid/sdk';
+
+const client = new BulkgridClient({
+  apiKey: process.env.BULKGRID_API_KEY ?? '',
+  baseUrl: process.env.BULKGRID_BASE_URL ?? 'https://bulkgrid.com',
+});
+
+const data = await client.runs.get(process.env.RUN_ID ?? '');
+console.log(data);
+```
+
+```python Python
+import os
+from bulkgrid import BulkgridClient
+
+with BulkgridClient(
+    api_key=os.environ["BULKGRID_API_KEY"],
+    base_url=os.environ.get("BULKGRID_BASE_URL", "https://bulkgrid.com"),
+) as client:
+    data = client.runs.get(os.environ["RUN_ID"])
+    print(data)
+```
+
+```bash cURL
+curl "$BULKGRID_BASE_URL/api/v1/runs/$RUN_ID" \
+  -H "x-api-key: $BULKGRID_API_KEY"
+```
+
+</CodeGroup>
+
+Example shape:
+
+```json
+{
+  "id": "6f7d3ee0-8d8e-46db-9191-9d6a3df9cb31",
+  "status": "processing",
+  "type": "crawl",
+  "queued": 10,
+  "in_progress": 3,
+  "done": 5,
+  "failed": 0,
+  "started_at": "2026-04-13T18:12:10.000Z",
+  "completed_at": null,
+  "last_error": null,
+  "statistics": {
+    "total_results": 5,
+    "success_count": 5,
+    "error_count": 0,
+    "total_size": 123456,
+    "average_response_time": 942
+  }
+}
+```
+
+## Polling
+
+A reasonable default:
+
+- first minute: every 2 to 5 seconds
+- larger crawl jobs: back off to 5 to 15 seconds
+- always apply a client-side maximum wait time
+
+Stop on `completed`, `failed`, or `cancelled`. Inspect `last_error`, `error_code`, and per-URL failures before retrying. A completed run can still contain failed pages.
+
+Use [source indexing status](/sources#check-source-status) to confirm that content is searchable. A completed one-off crawl does not establish a searchable source.
+
+## List results
+
+Requires `results:read`. List results after a run completes and inspect per-item errors before consuming content.
+
+<CodeGroup>
+
+```js Node.js
+import { BulkgridClient } from '@bulkgrid/sdk';
+
+const client = new BulkgridClient({
+  apiKey: process.env.BULKGRID_API_KEY ?? '',
+  baseUrl: process.env.BULKGRID_BASE_URL ?? 'https://bulkgrid.com',
+});
+
+const data = await client.runs.results(process.env.RUN_ID ?? '', { page: 1, limit: 20 });
+console.log(data);
+```
+
+```python Python
+import os
+from bulkgrid import BulkgridClient
+
+with BulkgridClient(
+    api_key=os.environ["BULKGRID_API_KEY"],
+    base_url=os.environ.get("BULKGRID_BASE_URL", "https://bulkgrid.com"),
+) as client:
+    data = client.runs.results(os.environ["RUN_ID"], {"page": 1, "limit": 20})
+    print(data)
+```
+
+```bash cURL
+curl "$BULKGRID_BASE_URL/api/v1/runs/$RUN_ID/results?page=1&limit=20" \
+  -H "x-api-key: $BULKGRID_API_KEY"
+```
+
+</CodeGroup>
+
+The response contains `results`, `page`, `limit`, and `total`. Each result can include URL/title metadata, output references, `extraction_data`, and `error_message`. Not every item produces every format.
+
+## Retrieve text content
+
+<CodeGroup>
+
+```js Node.js
+import { BulkgridClient } from '@bulkgrid/sdk';
+
+const client = new BulkgridClient({
+  apiKey: process.env.BULKGRID_API_KEY ?? '',
+  baseUrl: process.env.BULKGRID_BASE_URL ?? 'https://bulkgrid.com',
+});
+
+const data = await client.runs.getResultContent(process.env.RUN_ID ?? '', process.env.RESULT_ID ?? '', {
+  type: 'markdown',
+});
+console.log(data);
+```
+
+```python Python
+import os
+from bulkgrid import BulkgridClient
+
+with BulkgridClient(
+    api_key=os.environ["BULKGRID_API_KEY"],
+    base_url=os.environ.get("BULKGRID_BASE_URL", "https://bulkgrid.com"),
+) as client:
+    data = client.runs.get_result_content(
+        os.environ["RUN_ID"], os.environ["RESULT_ID"], {"type": "markdown"}
+    )
+    print(data)
+```
+
+```bash cURL
+curl "$BULKGRID_BASE_URL/api/v1/runs/$RUN_ID/results/$RESULT_ID/content?type=markdown" \
+  -H "x-api-key: $BULKGRID_API_KEY"
+```
+
+</CodeGroup>
+
+| `type`               | Response content type |
+| -------------------- | --------------------- |
+| `markdown` (default) | `text/markdown`       |
+| `cleanHtml`          | `text/html`           |
+| `rawHtml`            | `text/html`           |
+| `links`              | `text/plain`          |
+
+The body is text, not a JSON envelope. Add `download=true` to request an attachment. For HTML, inline responses are formatted for display; downloads preserve the stored content.
+
+## Screenshots
+
+<CodeGroup>
+
+```js Node.js
+import { BulkgridClient } from '@bulkgrid/sdk';
+
+const client = new BulkgridClient({
+  apiKey: process.env.BULKGRID_API_KEY ?? '',
+  baseUrl: process.env.BULKGRID_BASE_URL ?? 'https://bulkgrid.com',
+});
+
+const data = await client.runs.getResultScreenshot(process.env.RUN_ID ?? '', process.env.RESULT_ID ?? '');
+console.log(data);
+```
+
+```python Python
+import os
+from bulkgrid import BulkgridClient
+
+with BulkgridClient(
+    api_key=os.environ["BULKGRID_API_KEY"],
+    base_url=os.environ.get("BULKGRID_BASE_URL", "https://bulkgrid.com"),
+) as client:
+    data = client.runs.get_result_screenshot(
+        os.environ["RUN_ID"], os.environ["RESULT_ID"]
+    )
+    print(data)
+```
+
+```bash cURL
+curl "$BULKGRID_BASE_URL/api/v1/runs/$RUN_ID/results/$RESULT_ID/screenshot" \
+  -H "x-api-key: $BULKGRID_API_KEY"
+```
+
+</CodeGroup>
+
+The default response is JSON with `signedUrl`. Add `download=true` to retrieve the image bytes. Signed URLs are temporary; request a new URL instead of treating one as a permanent public asset URL.
+
+Request screenshot capture when creating the crawl. The screenshot endpoint cannot produce an image for a result that has none.
+
+## Store references
+
+Persist run IDs, result IDs, and the structured data your application needs. Use the authenticated content endpoints when retrieving stored outputs. Handle unavailable formats and deleted results explicitly.
+
+## Retry a run
+
+<CodeGroup>
+
+```js Node.js
+import { BulkgridClient } from '@bulkgrid/sdk';
+
+const client = new BulkgridClient({
+  apiKey: process.env.BULKGRID_API_KEY ?? '',
+  baseUrl: process.env.BULKGRID_BASE_URL ?? 'https://bulkgrid.com',
+});
+
+const data = await client.runs.retry(process.env.RUN_ID ?? '');
+console.log(data);
+```
+
+```python Python
+import os
+from bulkgrid import BulkgridClient
+
+with BulkgridClient(
+    api_key=os.environ["BULKGRID_API_KEY"],
+    base_url=os.environ.get("BULKGRID_BASE_URL", "https://bulkgrid.com"),
+) as client:
+    data = client.runs.retry(os.environ["RUN_ID"])
+    print(data)
+```
+
+```bash cURL
+curl -X POST "$BULKGRID_BASE_URL/api/v1/runs/$RUN_ID/retry" \
+  -H 'Content-Type: application/json' \
+  -H "x-api-key: $BULKGRID_API_KEY" \
+  -d '{}'
+```
+
+</CodeGroup>
+
+The API also supports a payload with a `urls` array for targeted retry behavior when appropriate.
+
+Use retry when:
+
+- the run failed for transient reasons
+- individual URLs should be retried
+- your application can safely tolerate repeated processing
+
+## Cancel a run
+
+<CodeGroup>
+
+```js Node.js
+import { BulkgridClient } from '@bulkgrid/sdk';
+
+const client = new BulkgridClient({
+  apiKey: process.env.BULKGRID_API_KEY ?? '',
+  baseUrl: process.env.BULKGRID_BASE_URL ?? 'https://bulkgrid.com',
+});
+
+const data = await client.runs.cancel(process.env.RUN_ID ?? '');
+console.log(data);
+```
+
+```python Python
+import os
+from bulkgrid import BulkgridClient
+
+with BulkgridClient(
+    api_key=os.environ["BULKGRID_API_KEY"],
+    base_url=os.environ.get("BULKGRID_BASE_URL", "https://bulkgrid.com"),
+) as client:
+    data = client.runs.cancel(os.environ["RUN_ID"])
+    print(data)
+```
+
+```bash cURL
+curl -X POST "$BULKGRID_BASE_URL/api/v1/runs/$RUN_ID/cancel" \
+  -H "x-api-key: $BULKGRID_API_KEY"
+```
+
+</CodeGroup>
+
+Expected success response:
+
+```json
+{
+  "success": true
+}
+```
+
+## When to retry vs cancel
+
+Retry when the work is still useful and failure appears recoverable.
+
+Cancel when:
+
+- the request is obsolete
+- the customer changed scope
+- downstream systems no longer need the output
+- the run is consuming resources you no longer want to spend
+
+## Operational guidance
+
+- do not blindly retry permanent failures
+- log `last_error`, `error_code`, and run status history
+- make retry decisions in your backend, not from browser clients
+
+## Website map runs
+
+Map runs use the same status, cancellation, retry, and deletion endpoints as crawl runs.
+Create one with `POST /api/v1/map` or `client.map()`. Poll the run until it completes, then
+read `result_data.links` from `GET /api/v1/runs/{runId}`. Map links are stored on the run,
+so the ingestion results endpoint is empty. See [Map](/map).

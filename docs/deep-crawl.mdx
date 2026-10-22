@@ -1,0 +1,122 @@
+---
+title: Deep Crawl
+description: Start from a single URL and ingest broader site coverage with controlled boundaries.
+icon: bug
+---
+
+Use deep crawl when you want Bulkgrid to expand outward from a starting URL and collect a broader set of pages.
+
+## Best fit
+
+Deep crawl is useful when:
+
+- you do not want to maintain a full URL list manually
+- you need broader documentation or help-center coverage
+- you want path controls around a site section
+
+## Request shape
+
+Node.js and Python examples use the [Bulkgrid SDKs](/sdk). Set `BULKGRID_API_KEY` in your backend environment; cURL examples also use `BULKGRID_BASE_URL=https://bulkgrid.com`.
+
+<CodeGroup>
+
+```js Node.js
+import { BulkgridClient } from '@bulkgrid/sdk';
+
+const client = new BulkgridClient({
+  apiKey: process.env.BULKGRID_API_KEY ?? '',
+  baseUrl: process.env.BULKGRID_BASE_URL ?? 'https://bulkgrid.com',
+});
+
+const data = await client.deepCrawl({
+  url: 'https://example.com/docs',
+  config: {
+    maxDepth: 3,
+    maxPages: 100,
+    includePaths: ['/docs', '/blog'],
+    excludePaths: ['/legal'],
+    includeExternal: false,
+    includeDocumentLinks: true,
+    restrictToStartPath: true,
+  },
+  options: {
+    formats: ['markdown', 'cleanHtml', 'links'],
+    timeout: 30000,
+    blockAds: true,
+    useInteractions: true,
+  },
+});
+console.log(data);
+```
+
+```python Python
+import os
+from bulkgrid import BulkgridClient
+
+with BulkgridClient(
+    api_key=os.environ["BULKGRID_API_KEY"],
+    base_url=os.environ.get("BULKGRID_BASE_URL", "https://bulkgrid.com"),
+) as client:
+    data = client.deep_crawl(
+        {
+            "url": "https://example.com/docs",
+            "config": {
+                "maxDepth": 3,
+                "maxPages": 100,
+                "includePaths": ["/docs", "/blog"],
+                "excludePaths": ["/legal"],
+                "includeExternal": False,
+                "includeDocumentLinks": True,
+                "restrictToStartPath": True,
+            },
+            "options": {
+                "formats": ["markdown", "cleanHtml", "links"],
+                "timeout": 30000,
+                "blockAds": True,
+                "useInteractions": True,
+            },
+        }
+    )
+    print(data)
+```
+
+```bash cURL
+curl "$BULKGRID_BASE_URL/api/v1/deep-crawl" \
+  -H 'Content-Type: application/json' \
+  -H "x-api-key: $BULKGRID_API_KEY" \
+  -d '{
+    "type": "deep_crawl",
+    "url": "https://example.com/docs",
+    "config": {
+      "maxDepth": 3,
+      "maxPages": 100,
+      "includePaths": ["/docs", "/blog"],
+      "excludePaths": ["/legal"],
+      "includeExternal": false,
+      "includeDocumentLinks": true,
+      "restrictToStartPath": true
+    },
+    "options": {
+      "formats": ["markdown", "cleanHtml", "links"],
+      "timeout": 30000,
+      "blockAds": true,
+      "useInteractions": true
+    }
+  }'
+```
+
+</CodeGroup>
+
+## Key controls
+
+- `maxDepth`: how far Bulkgrid should traverse from the starting URL
+- `maxPages`: upper bound on discovered pages to process
+- `includePaths`: preferred allowed path prefixes
+- `excludePaths`: path areas to avoid
+- `includeExternal`: whether external domains may be followed
+- `includeDocumentLinks`: whether document links should be included
+- `restrictToStartPath`: whether the crawl should stay under the starting path
+
+## Recommendation
+
+Keep deep crawl scope explicit. The biggest quality and cost problems in crawl systems usually come from unclear crawl boundaries.

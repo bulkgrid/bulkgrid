@@ -14,7 +14,7 @@ Prefer connected Bulkgrid MCP management tools when present. Tool availability d
 
 The CLI source commands use `BULKGRID_API_KEY` and optional `BULKGRID_URL`. Their output is JSON. The TypeScript SDK uses `BulkgridClient` with an API key and base URL. Use the installed version's help/schema; older releases may lack these operations. Never request secrets in chat, embed them in scripts, or substitute OAuth tokens for API keys.
 
-| Operation                  | MCP tool              | CLI (`bulkgrid sources …`) | SDK (`client.sources.…`) | API-key scopes                   |
+| Operation                  | MCP tool              | CLI (`bulkgrid sources …`) | SDK (`client.index.sources.…`) | API-key scopes                   |
 | -------------------------- | --------------------- | -------------------------- | ------------------------ | -------------------------------- |
 | Find existing sources      | `find_sources`        | `find <query>`             | `search(query)`          | `sources:read`                   |
 | Start analysis             | `analyze_source`      | `analyze <url>`            | `analyze({url})`         | `sources:discover`, `runs:write` |
@@ -23,9 +23,9 @@ The CLI source commands use `BULKGRID_API_KEY` and optional `BULKGRID_URL`. Thei
 | Check ingestion            | `get_source_status`   | `status <id>`              | `status(id)`             | `sources:read`                   |
 | Refresh existing source    | `recrawl_source`      | `recrawl <id>`             | `recrawl(id)`            | `sources:write`, `runs:write`    |
 
-For collection management, use `list_source_collections` / `sources collections`, `get_collection_rules` / `sources rules <collectionId>` (`collections:read`), and `add_source_to_collection` / `sources include <sourceId> <collectionId>` (`collections:write`). SDK equivalents are `client.collections.list()`, `.rules(id)`, and `.addSource({sourceId, collectionId})`.
+For collection management, use `list_source_collections` / `sources collections`, `get_collection_rules` / `sources rules <collectionId>` (`collections:read`), and `add_source_to_collection` / `sources include <sourceId> <collectionId>` (`collections:write`). SDK equivalents are `client.index.collections.list()`, `.rules(id)`, and `.addSource({sourceId, collectionId})`.
 
-These MCP/CLI add commands handle website sources. GitHub repositories use the SDK's separate `sources.createGithub` workflow; inspect its schema and repository access requirements instead of sending a GitHub repository URL as a domain source.
+These MCP/CLI add commands handle website sources. GitHub repositories use the SDK's separate `index.sources.createGithub` workflow; inspect its schema and repository access requirements instead of sending a GitHub repository URL as a domain source.
 
 ## Establish scope and inspect first
 

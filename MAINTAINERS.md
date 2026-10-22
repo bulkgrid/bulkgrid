@@ -39,6 +39,19 @@ The apply tool overlays only SDK, CLI, contracts, API documentation, examples, O
 
 The helper rejects symlinks in copied source and destination paths. Keep the staging export outside this checkout. Review `git diff` after applying and commit the resulting `package-lock.json` with package dependency changes.
 
+### Complete the public integration
+
+The overlay does not remove obsolete files or adapt every platform-specific setting. After applying:
+
+- Remove superseded generated contract chunks and documentation pages after comparing them with the staging export. Keep documentation redirects to the replacement pages.
+- Resolve SDK declaration types from `@bulkgrid/contracts`; remove private monorepo build-path overrides. Point SDK and CLI repository metadata to `bulkgrid/bulkgrid`.
+- Keep the public documentation validator aligned with the current contract routes, including `/api/v1/map` and `/api/v1/index/*`.
+- Include documentation styles and third-party asset licenses that the exporter's file filter omits. Record these additional platform inputs in `export-manifest.json`.
+- Target `main` in the exported Python check workflow. Keep package publication separate, and ensure package READMEs describe workflows that actually exist here.
+- Review public documentation for private-only examples and old API names. The root README and `docs/logo/bgicon.png` are maintained here; preserve them on future refreshes.
+
+On macOS, use `TMPDIR=/private/tmp npm run check` if the plugin archive tests reject the system temporary directory's `/var` symlink.
+
 ## Ownership and generation
 
 Author plugin resources and shared skills in this public repository. Keep `skills/bulkgrid-search` as the shared retrieval source and keep source-management guidance in the separate `skills/bulkgrid-sources` skill. Generate installable plugin copies from their public source with the plugin scripts; do not edit generated copies directly.

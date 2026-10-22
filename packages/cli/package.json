@@ -1,6 +1,11 @@
 {
   "name": "@bulkgrid/cli",
-  "version": "0.1.0",
+  "version": "0.4.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bulkgrid/bulkgrid.git",
+    "directory": "packages/cli"
+  },
   "type": "module",
   "exports": {
     ".": {
@@ -28,7 +33,7 @@
     "@inquirer/prompts": "7.10.1",
     "commander": "14.0.3",
     "zod": "4.4.3",
-    "@bulkgrid/sdk": "^0.2.0"
+    "@bulkgrid/sdk": "^0.4.0"
   },
   "devDependencies": {},
   "publishConfig": {

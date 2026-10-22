@@ -1,0 +1,151 @@
+---
+title: Collections
+description: Organize sources, curate content, and control retrieval access.
+icon: folders
+---
+
+Collections group the indexed content an application or agent can search. Use them to separate products, audiences, or internal and public knowledge.
+
+## Create a collection
+
+Requires `collections:write`. Free includes one public-source collection, Pro includes 10 collections, and Growth includes unlimited collections.
+
+Node.js and Python examples use the [Bulkgrid SDKs](/sdk). Set `BULKGRID_API_KEY` in your backend environment; cURL examples also use `BULKGRID_BASE_URL=https://bulkgrid.com`.
+
+<CodeGroup>
+
+```js Node.js
+import { BulkgridClient } from '@bulkgrid/sdk';
+
+const client = new BulkgridClient({
+  apiKey: process.env.BULKGRID_API_KEY ?? '',
+  baseUrl: process.env.BULKGRID_BASE_URL ?? 'https://bulkgrid.com',
+});
+
+const data = await client.index.collections.create({
+  name: 'Product documentation',
+  description: 'Content for the support assistant',
+});
+console.log(data);
+```
+
+```python Python
+import os
+from bulkgrid import BulkgridClient
+
+with BulkgridClient(
+    api_key=os.environ["BULKGRID_API_KEY"],
+    base_url=os.environ.get("BULKGRID_BASE_URL", "https://bulkgrid.com"),
+) as client:
+    data = client.index.collections.create(
+        {
+            "name": "Product documentation",
+            "description": "Content for the support assistant",
+        }
+    )
+    print(data)
+```
+
+```bash cURL
+curl "$BULKGRID_BASE_URL/api/v1/index/collections" \
+  -H 'Content-Type: application/json' \
+  -H "x-api-key: $BULKGRID_API_KEY" \
+  -d '{"name":"Product documentation","description":"Content for the support assistant"}'
+```
+
+</CodeGroup>
+
+Use the returned collection ID when adding source, folder, or URL rules. Select this collection when creating an API key or approving an OAuth connection.
+
+## Include and exclude content
+
+The source picker has **Public** and **Private** tabs. Public lists the shared catalog; Private lists sources owned by your workspace. Public sources can be included directly, with no subscription step. Free collections can contain public sources only.
+
+Collection rules support:
+
+- action: `include` or `exclude`
+- target: `source`, `folder`, or `url`
+- source context through `source_id`
+- target value through `target_id`
+- optional metadata on added rules
+
+### Read and update rules
+
+`GET /api/v1/index/collections/{collectionId}/rules` requires `collections:read`. `PATCH` on the same path requires `collections:write` and accepts `add` and `remove` arrays.
+
+Each rule uses `action`, `target`, `source_id`, and `target_id`. Source targets identify the source, folder targets identify a folder path, and URL targets identify a document URL. Use IDs and paths returned for sources available to your workspace.
+
+### Include an entire source
+
+Set `SOURCE_ID` and `COLLECTION_ID` to the IDs returned when creating or listing those resources. This expands the collection's searchable content. The CLI requires a scoped API key, as described in [CLI setup](/cli).
+
+<CodeGroup>
+
+```js Node.js
+import { BulkgridClient } from '@bulkgrid/sdk';
+
+const client = new BulkgridClient({
+  apiKey: process.env.BULKGRID_API_KEY ?? '',
+  baseUrl: process.env.BULKGRID_BASE_URL ?? 'https://bulkgrid.com',
+});
+
+const data = await client.index.collections.addSource({
+  collectionId: process.env.COLLECTION_ID ?? '',
+  sourceId: process.env.SOURCE_ID ?? '',
+});
+console.log(data);
+```
+
+```python Python
+import os
+from bulkgrid import BulkgridClient
+
+with BulkgridClient(
+    api_key=os.environ["BULKGRID_API_KEY"],
+    base_url=os.environ.get("BULKGRID_BASE_URL", "https://bulkgrid.com"),
+) as client:
+    data = client.index.collections.add_source(
+        os.environ["COLLECTION_ID"], os.environ["SOURCE_ID"]
+    )
+    print(data)
+```
+
+```bash cURL
+curl -X PATCH "$BULKGRID_BASE_URL/api/v1/index/collections/$COLLECTION_ID/rules" \
+  -H 'Content-Type: application/json' \
+  -H "x-api-key: $BULKGRID_API_KEY" \
+  -d "{\"add\":[{\"action\":\"include\",\"target\":\"source\",\"source_id\":\"$SOURCE_ID\",\"target_id\":\"$SOURCE_ID\"}]}"
+```
+
+```bash CLI
+bulkgrid sources include "$SOURCE_ID" "$COLLECTION_ID" \
+  --url "${BULKGRID_BASE_URL:-https://bulkgrid.com}"
+```
+
+</CodeGroup>
+
+### Choose the scope
+
+- include an entire source
+- include one folder from a source
+- exclude a noisy subfolder
+- include or exclude specific URLs
+
+### Inspect effective coverage
+
+The rules endpoint does more than just list rules. It also returns:
+
+- aggregate rule counts
+- effective counts by source
+
+That matters because customers need to understand the actual collection boundary after include and exclude rules interact.
+
+## Search and access
+
+Agent, API key, and OAuth searches use workspace collections. “All collections” searches the union of those collections; a workspace without collections has no agent-searchable content. Pass `collectionId` to narrow retrieval to one collection. Collection rules are the complete content boundary; legacy subscription path and page restrictions are not applied. Select approved collections when creating an API key or approving an OAuth connection. A search filter cannot grant access beyond the credential's approved collections.
+
+Manage AI and CLI grants in Connected Apps. See [Authentication](/authentication) and [API key scopes](/api-key-scopes).
+
+## Manage collections
+
+Use `GET /api/v1/index/collections` with `collections:read` to list collections. Use `PATCH /api/v1/index/collections/{collectionId}` with `collections:write` to update a collection. Collection creation follows your plan allowance; see [plan limits](/plan-gating-and-limits).

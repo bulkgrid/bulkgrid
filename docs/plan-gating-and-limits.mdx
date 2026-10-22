@@ -1,0 +1,75 @@
+---
+title: Plan Gating and Limits
+description: Understand how plan boundaries affect collections, runs, and usage-sensitive workflows.
+---
+
+Some product capabilities are explicitly plan-sensitive.
+
+## Confirmed current behavior
+
+Free includes 1 collection containing public sources only. Pro includes 10 collections with public or private sources. Growth includes unlimited collections.
+
+The database enforces collection limits, including simultaneous creation requests. Exceeding a limit returns a structured `forbidden` response with `LIMIT_COLLECTIONS` and an `upgrade_plan` target. Adding a private source to a Free collection returns `LIMIT_COLLECTION_PRIVATE_SOURCES`. Existing collections remain available after downgrading; creating more requires being below the new allowance.
+
+## Other usage-sensitive areas
+
+The product also enforces or tracks usage around areas such as:
+
+- sources
+- concurrent runs
+- crawled pages
+- converted files
+- indexed pages per month
+- storage
+- API calls
+
+## Source access
+
+- Free can browse existing public sources and add them directly to its collection. Creating a new public source requires Pro (`LIMIT_PUBLIC_SOURCE_CREATION_REQUIRES_PRO`).
+- Free cannot create private sources (`LIMIT_PRIVATE_SOURCE_CREATION_REQUIRES_PRO`).
+- Pro can create public and private sources. There are no source-count caps on catalog access or paid source creation.
+- Processed pages, web searches, indexed searches, workspace storage, and concurrency remain subject to plan allowances. Free processed pages cover standalone crawl, deep crawl, and extraction work; they do not grant source creation.
+- GitHub repository sources require Pro.
+- Manual source refresh requires an active or trialing paid plan (`LIMIT_MANUAL_REINDEX`).
+- Daily public-source refresh can return `LIMIT_RECRAWL_FREQUENCY` on an unsupported plan.
+
+Read `details.code`, `details.current`, `details.limit`, and `details.upgradeTarget` when present. Reduce the requested workload or change the plan; repeated retries do not resolve a plan restriction. Use the dashboard for your workspace's current allowances rather than hardcoding pricing values.
+
+## Storage, files, and workspace members
+
+| Plan       | Workspace storage | Maximum file size | Workspace members |
+| ---------- | ----------------: | ----------------: | ----------------: |
+| Free       |            250 MB |             25 MB |                 1 |
+| Pro        |             10 GB |            100 MB |                 5 |
+| Growth     |             50 GB |            100 MB |                10 |
+| Enterprise |            Custom |            Custom |            Custom |
+
+Storage measures retained workspace data and does not reset each month. Pending invitations count toward the workspace member limit.
+
+## Concurrency
+
+| Plan       | Concurrent crawl/indexing tasks | Simultaneous runs |
+| ---------- | ------------------------------: | ----------------: |
+| Free       |                               1 |                 1 |
+| Pro        |                              10 |                 3 |
+| Growth     |                              25 |                 5 |
+| Enterprise |                          Custom |            Custom |
+
+Concurrency is shared across the workspace's active runs. Each run can process multiple pages; crawling and indexing share the same task allowance. Queued work waits for capacity to become available. These limits are the same on monthly and annual subscriptions and do not increase with additional usage purchases.
+
+Bulkgrid-managed public-source ingestion and refreshes use shared platform capacity. Search allowances and API rate limits are separate from crawl/indexing concurrency.
+
+## Search allowances and additional usage
+
+Web searches and indexed searches have separate monthly allowances per workspace:
+
+| Plan       | Web searches | Indexed searches |
+| ---------- | -----------: | ---------------: |
+| Free       |          500 |            1,000 |
+| Pro        |        5,000 |           20,000 |
+| Growth     |       25,000 |          100,000 |
+| Enterprise |       Custom |           Custom |
+
+Each web search returns up to 10 results. Crawling the results also uses processed pages. Indexed searches query your sources and collections, including through the API and MCP. Annual subscriptions receive the same monthly allowances.
+
+Pro and Growth workspace owners can enable additional usage in Settings → Billing. Extra web searches cost $4.00 per 1,000 on Pro or $3.60 on Growth; extra indexed searches cost $1.00 per 1,000 on either plan. The monthly spending cap is shared with extra processed pages. You pay only for actual extra usage, invoiced after each calendar month, including on annual subscriptions. The cap repeats monthly until changed or disabled. A request pauses when its included allowance is exhausted and extra usage is disabled or would exceed the cap; other included allowances remain available.

@@ -6,11 +6,12 @@ export default defineConfig({
   platform: 'neutral',
   target: 'es2022',
   fixedExtension: false,
-  dts: {
-    eager: true,
-    resolve: true,
-  },
+  dts: { resolver: 'tsc' },
   deps: {
     alwaysBundle: ['@bulkgrid/contracts'],
+    dts: {
+      // Unused UI types are removed during declaration tree shaking.
+      neverBundle: ['react'],
+    },
   },
 });

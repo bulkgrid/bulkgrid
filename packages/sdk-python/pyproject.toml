@@ -1,0 +1,44 @@
+[build-system]
+requires = ["hatchling>=1.26,<2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "bulkgrid"
+dynamic = ["version"]
+description = "Python SDK for Bulkgrid search, sources, and crawl workflows"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "LicenseRef-Proprietary"
+authors = [{name = "Bulkgrid"}]
+dependencies = ["httpx>=0.27,<1", "typing-extensions>=4.12,<5"]
+classifiers = ["Programming Language :: Python :: 3", "Typing :: Typed"]
+
+[project.urls]
+Documentation = "https://bulkgrid.com/docs/sdk"
+Homepage = "https://bulkgrid.com"
+
+[project.optional-dependencies]
+dev = ["pytest>=8,<10", "mypy>=1.11,<2", "ruff==0.16.7", "build>=1.2,<2"]
+
+[tool.hatch.version]
+path = "src/bulkgrid/_version.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/bulkgrid"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src", "tests", "scripts", "pyproject.toml", "README.md", "CHANGELOG.md"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.mypy]
+strict = true
+files = ["src/bulkgrid"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 110
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]

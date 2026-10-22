@@ -92,22 +92,22 @@ describe('source and collection SDK workflows', () => {
       .mockResolvedValueOnce(Response.json(rulesResponse))
       .mockResolvedValueOnce(Response.json(searchResponse));
 
-    const found = await client.sources.search('example & docs');
+    const found = await client.index.sources.search('example & docs');
     expect(found.sources[0]?.isSubscribed).toBe(false);
-    const subscribed = await client.sources.create({ type: 'domain', identifier: source.identifier });
+    const subscribed = await client.index.sources.create({ type: 'domain', identifier: source.identifier });
     expect(subscribed).toEqual({ source, created: false });
-    await client.collections.create({ name: 'Research' });
-    await client.collections.addSource({ collectionId, sourceId });
-    const results = await client.search({ query: 'authentication', queryMode: 'auto', collectionId });
+    await client.index.collections.create({ name: 'Research' });
+    await client.index.collections.addSource({ collectionId, sourceId });
+    const results = await client.index.search({ query: 'authentication', queryMode: 'auto', collectionId });
     expect(results.executedQueries).toEqual(['authentication', 'login setup']);
     expect(results.queryMode).toBe('auto');
-    expect(requestAt(fetcher, 0).url).toBe('https://bulkgrid.com/api/v1/sources/search?query=example+%26+docs');
+    expect(requestAt(fetcher, 0).url).toBe('https://bulkgrid.com/api/v1/index/sources/search?query=example+%26+docs');
     expect(requestAt(fetcher, 3)).toMatchObject({
       method: 'PATCH',
-      url: `https://bulkgrid.com/api/v1/collections/${collectionId}/rules`,
+      url: `https://bulkgrid.com/api/v1/index/collections/${collectionId}/rules`,
       body: { add: [include] },
     });
-    expect(apiContract.collections.updateRules.requestSchema.safeParse(requestAt(fetcher, 3).body).success).toBe(true);
+    expect(apiContract.index.collections.updateRules.requestSchema.safeParse(requestAt(fetcher, 3).body).success).toBe(true);
     expect(requestAt(fetcher, 4).body.collectionId).toBe(collectionId);
   });
 
@@ -118,7 +118,7 @@ describe('source and collection SDK workflows', () => {
     fetcher
       .mockResolvedValueOnce(Response.json({ ...rulesResponse, rules: [include, folder, unrelated] }))
       .mockResolvedValueOnce(Response.json({ ...rulesResponse, rules: [unrelated] }));
-    await client.collections.removeSource({ collectionId, sourceId });
+    await client.index.collections.removeSource({ collectionId, sourceId });
     expect(requestAt(fetcher, 1).body).toEqual({ remove: [include, folder] });
     expect(fetcher).toHaveBeenCalledTimes(2);
   });
@@ -126,7 +126,7 @@ describe('source and collection SDK workflows', () => {
   it('does not issue a write if reading the rules is forbidden', async () => {
     const { client, fetcher } = setup();
     fetcher.mockResolvedValueOnce(Response.json({ error: 'Missing collections:read' }, { status: 403 }));
-    await expect(client.collections.removeSource({ collectionId, sourceId })).rejects.toMatchObject({ status: 403 });
+    await expect(client.index.collections.removeSource({ collectionId, sourceId })).rejects.toMatchObject({ status: 403 });
     expect(fetcher).toHaveBeenCalledTimes(1);
   });
 
@@ -134,7 +134,7 @@ describe('source and collection SDK workflows', () => {
     const { client, fetcher } = setup();
     const failure = { error: 'Pro plan required', details: { code: 'LIMIT_COLLECTIONS' } };
     fetcher.mockResolvedValueOnce(Response.json(failure, { status: 403 }));
-    await expect(client.collections.create({ name: 'Research' })).rejects.toMatchObject({
+    await expect(client.index.collections.create({ name: 'Research' })).rejects.toMatchObject({
       name: 'BulkgridApiError',
       status: 403,
       data: failure,
@@ -143,20 +143,32 @@ describe('source and collection SDK workflows', () => {
     expect(new Headers(requestAt(fetcher, 0).init?.headers).get('x-api-key')).toBe('scoped-test-key');
   });
 
+  it('lists workspace connections and forwards private GitHub analysis credentials', async () => {
+    const { client, fetcher } = setup();
+    fetcher.mockResolvedValueOnce(Response.json({ connections: [] }));
+    await client.index.sources.githubConnections();
+    expect(requestAt(fetcher, 0).url).toBe('https://bulkgrid.com/api/v1/integrations/github/connections');
+    fetcher.mockResolvedValueOnce(Response.json({ error: 'Connection revoked' }, { status: 403 }));
+    const input = { repositoryUrl: 'https://github.com/org/private', connection_id: '11111111-1111-4111-8111-111111111111' };
+    await expect(client.index.sources.analyzeGithub(input)).rejects.toBeInstanceOf(BulkgridApiError);
+    expect(requestAt(fetcher, 1).body).toEqual(input);
+    expect(requestAt(fetcher, 1).url).toBe('https://bulkgrid.com/api/v1/index/sources/github/analyze');
+  });
+
   it('sends the GitHub URL in wire format and accepts omitted server defaults', async () => {
     const { client, fetcher } = setup();
     fetcher.mockResolvedValueOnce(Response.json({ error: 'Plan required' }, { status: 403 }));
     const input: CreateGithubSourceInput = { repositoryUrl: 'https://github.com/example/docs' };
-    await expect(client.sources.createGithub(input)).rejects.toBeInstanceOf(BulkgridApiError);
+    await expect(client.index.sources.createGithub(input)).rejects.toBeInstanceOf(BulkgridApiError);
     expect(requestAt(fetcher, 0).body).toEqual(input);
-    expect(apiContract.sources.createGithub.requestSchema.safeParse(requestAt(fetcher, 0).body).success).toBe(true);
+    expect(apiContract.index.sources.createGithub.requestSchema.safeParse(requestAt(fetcher, 0).body).success).toBe(true);
   });
 
   it('forwards pagination, path encoding, headers, and cancellation', async () => {
     const { client, fetcher } = setup();
     const controller = new AbortController();
     fetcher.mockResolvedValueOnce(Response.json({ documents: [], parent: '/guide', nextOffset: null, total: 0, limit: 20 }));
-    await client.sources.documents(
+    await client.index.sources.documents(
       'source/id',
       { parent: '/guide', offset: 40, limit: 20 },
       {
@@ -165,7 +177,7 @@ describe('source and collection SDK workflows', () => {
       },
     );
     const sent = requestAt(fetcher, 0);
-    expect(sent.url).toBe('https://bulkgrid.com/api/v1/sources/source%2Fid/documents?parent=%2Fguide&offset=40&limit=20');
+    expect(sent.url).toBe('https://bulkgrid.com/api/v1/index/sources/source%2Fid/documents?parent=%2Fguide&offset=40&limit=20');
     expect(sent.init?.signal).toBe(controller.signal);
     expect(new Headers(sent.init?.headers).get('x-request-id')).toBe('test');
   });
@@ -175,8 +187,8 @@ describe('source and collection SDK workflows', () => {
     fetcher
       .mockResolvedValueOnce(Response.json({ sources: [{ id: sourceId }] }))
       .mockResolvedValueOnce(new Response('Upstream unavailable', { status: 502 }));
-    await expect(client.sources.list()).rejects.toMatchObject({ name: 'ZodError' });
-    await expect(client.sources.list()).rejects.toMatchObject({
+    await expect(client.index.sources.list()).rejects.toMatchObject({ name: 'ZodError' });
+    await expect(client.index.sources.list()).rejects.toMatchObject({
       name: 'BulkgridApiError',
       status: 502,
       data: 'Upstream unavailable',

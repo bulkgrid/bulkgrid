@@ -26,16 +26,16 @@ describe('source analysis SDK', () => {
       .mockResolvedValueOnce(Response.json(analysis, { status: 202 }))
       .mockResolvedValueOnce(Response.json({ ...analysis, status: 'partial', urlCount: 12 }));
     const client = new BulkgridClient({ apiKey: 'test-key', baseUrl: 'https://bulkgrid.com', fetch: fetcher });
-    expect(await client.sources.analyze({ url: discovery.url })).toEqual(analysis);
-    expect((await client.sources.getAnalysis(id)).status).toBe('partial');
-    expect(String(fetcher.mock.calls[1]![0])).toBe(`https://bulkgrid.com/api/v1/sources/discover/analyses/${id}`);
+    expect(await client.index.sources.analyze({ url: discovery.url })).toEqual(analysis);
+    expect((await client.index.sources.getAnalysis(id)).status).toBe('partial');
+    expect(String(fetcher.mock.calls[1]![0])).toBe(`https://bulkgrid.com/api/v1/index/sources/discover/analyses/${id}`);
     expect(JSON.parse(String(fetcher.mock.calls[0]![1]?.body))).toEqual({ url: discovery.url });
     expect(fetcher).toHaveBeenCalledTimes(2);
   });
   it('surfaces permission errors without retrying analysis', async () => {
     const fetcher = vi.fn<typeof fetch>().mockResolvedValue(Response.json({ error: 'Missing runs:write' }, { status: 403 }));
     const client = new BulkgridClient({ apiKey: 'test-key', baseUrl: 'https://bulkgrid.com', fetch: fetcher });
-    await expect(client.sources.analyze({ url: discovery.url })).rejects.toBeInstanceOf(BulkgridApiError);
+    await expect(client.index.sources.analyze({ url: discovery.url })).rejects.toBeInstanceOf(BulkgridApiError);
     expect(fetcher).toHaveBeenCalledTimes(1);
   });
 });

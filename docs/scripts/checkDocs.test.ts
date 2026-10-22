@@ -52,14 +52,20 @@ describe('checkDocs', () => {
     expect(result.errors).toEqual([]);
     expect(result.examples).toBe(1);
     expect(result.links).toBe(3);
-    await expect(readFile(join(docsRoot, 'api-reference/openapi.json'), 'utf8')).resolves.toContain('"openapi": "3.0.3"');
+    await expect(readFile(join(docsRoot, 'api-reference/openapi.json'), 'utf8')).resolves.toContain(
+      '"openapi": "3.0.3"',
+    );
   });
 
   it('reports malformed page metadata, missing links, and invalid request payloads', async () => {
     const docsRoot = await createDocsFixture(
-      ['[Missing page](/missing)', '', '```bash', 'curl https://example.test/api/v1/search -d \'{"query":42}\'', '```'].join(
-        '\n',
-      ),
+      [
+        '[Missing page](/missing)',
+        '',
+        '```bash',
+        'curl https://example.test/api/v1/search -d \'{"query":42}\'',
+        '```',
+      ].join('\n'),
       { pages: ['missing-navigation-page'] },
     );
 
@@ -89,6 +95,37 @@ describe('checkDocs', () => {
       expect.arrayContaining([expect.stringContaining('api-reference/openapi.json: stale specification')]),
     );
     expect(result.examples).toBe(0);
+  });
+
+  it.each([
+    [
+      '/api/v1/map',
+      { type: 'map', url: 'https://example.com', config: { limit: 100 } },
+      { url: 'https://example.com' },
+    ],
+    ['/api/v1/index/search', { query: 'authentication', limit: 20 }, { query: 42 }],
+  ])('validates current %s examples against their own contract', async (endpoint, valid, invalid) => {
+    const docsRoot = await createDocsFixture(
+      [
+        '---',
+        'title: Guide',
+        'description: Current API examples',
+        '---',
+        '```bash',
+        `curl https://example.test${endpoint} -d '${JSON.stringify(valid)}'`,
+        '```',
+        '```bash',
+        `curl https://example.test${endpoint} -d '${JSON.stringify(invalid)}'`,
+        '```',
+      ].join('\n'),
+      { pages: ['guide'] },
+    );
+
+    const result = await checkDocs(docsRoot);
+
+    expect(result.examples).toBe(2);
+    expect(result.errors).toHaveLength(1);
+    expect(result.errors[0]).toContain(`${endpoint}:`);
   });
 });
 

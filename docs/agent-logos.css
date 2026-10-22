@@ -1,0 +1,10 @@
+/* External SVG images do not inherit the surrounding text color. */
+img[src*='/logo/clients/'],
+img[src*='%2Flogo%2Fclients%2F'] {
+  filter: brightness(0) !important;
+}
+
+.dark img[src*='/logo/clients/'],
+.dark img[src*='%2Flogo%2Fclients%2F'] {
+  filter: brightness(0) invert(1) !important;
+}

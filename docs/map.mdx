@@ -1,0 +1,63 @@
+---
+title: Map
+description: Discover website URLs and track the result through a map run.
+icon: list-tree
+---
+
+Map quickly discovers URLs from sitemaps and sitemap indexes.
+It does not fetch discovered pages, recursively traverse links, index content, or use cached
+crawl data. For recursive discovery and content, use [Deep Crawl](/deep-crawl).
+
+In the dashboard, open **Playground → Map**, enter a website, and select **Map now**.
+The run page updates automatically. It shows discovered URLs and discovery warnings. The result card always displays the complete array of discovered URLs, with copy and download actions.
+Use **Runs → Maps** to find previous map runs. Cancellation, retry, and deletion work like crawl.
+
+## Create a map
+
+```bash
+curl "$BULKGRID_BASE_URL/api/v1/map" \
+  -H "Authorization: Bearer $BULKGRID_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "map",
+    "url": "https://example.com",
+    "config": { "limit": 100 }
+  }'
+```
+
+The endpoint requires `runs:write` and returns a pending run. Poll
+`GET /api/v1/runs/{id}` with `runs:read`. When `status` is `completed`, read
+`result_data.links`. The same request can be sent to `POST /api/v1/runs`.
+
+```typescript
+const run = await client.map({
+  url: 'https://example.com',
+  config: { search: 'API reference', limit: 100 },
+});
+const status = await client.runs.get(run.id);
+```
+
+The Python SDK supports both synchronous and asynchronous clients:
+
+```python
+run = client.map({"url": "https://example.com", "config": {"limit": 100}})
+status = client.runs.get(run["id"])
+```
+
+## Options
+
+| Config field            | Default | Meaning                                                  |
+| ----------------------- | ------- | -------------------------------------------------------- |
+| `search`                | unset   | Return only URLs matching at least one search word.      |
+| `includeSubdomains`     | `true`  | Include descendants of the input hostname.               |
+| `ignoreQueryParameters` | `true`  | Remove query strings before deduplication.               |
+| `limit`                 | `5000`  | Maximum returned URLs, from 1 to 100,000.                |
+| `timeout`               | `60000` | Overall deadline in milliseconds, from 1,000 to 150,000. |
+
+Coverage is approximate. Sitemap discovery is bounded to 100 documents and 5 MiB per
+decoded document. Maps may be empty or include stale sitemap URLs; check `result_data.warnings`.
+The `search` option filters sitemap URLs by case-insensitive keyword matches, including decoded URL text.
+URLs matching at least one word are ordered by relevance before applying the limit. No matches returns an empty array. It does not call a web-search provider.
+
+Map runs consume execution capacity but no processed-page quota. Results live on the run;
+`/runs/{id}/results` remains the endpoint for ingestion results from crawl and extract.

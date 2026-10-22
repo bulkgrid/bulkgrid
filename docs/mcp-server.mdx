@@ -1,0 +1,167 @@
+---
+title: MCP
+description: Connect AI apps to your indexed Bulkgrid collections.
+---
+
+The Bulkgrid MCP server gives AI clients tools to discover accessible sources and collections, search indexed content, and read document passages.
+
+```text
+https://bulkgrid.com/api/v1/mcp
+```
+
+## Connect with OAuth
+
+## Client setup
+
+Choose your client, add Bulkgrid, and sign in through your browser. Review the workspace and collections the agent can access.
+
+<Tabs>
+  <Tab title="Codex" icon="/logo/clients/codex.svg">
+    Run in your terminal with the Codex CLI installed:
+
+    ```bash
+    codex mcp add bulkgrid --url https://bulkgrid.com/api/v1/mcp
+    ```
+
+    Complete the browser sign-in if prompted. To start sign-in separately, run `codex mcp login bulkgrid`. Open a new Codex session after connecting.
+
+    [Codex MCP setup](https://developers.openai.com/codex/mcp)
+
+  </Tab>
+  <Tab title="Claude Code" icon="/logo/clients/claude.svg">
+    Run in your project's terminal with Claude Code installed:
+
+    ```bash
+    claude mcp add --transport http bulkgrid https://bulkgrid.com/api/v1/mcp
+    ```
+
+    Open Claude Code, run `/mcp`, and select **bulkgrid** to authenticate in your browser.
+
+    [Claude Code MCP setup](https://code.claude.com/docs/en/mcp)
+
+  </Tab>
+  <Tab title="Cursor" icon="/logo/clients/cursor.svg">
+    Add this server to `.cursor/mcp.json` in your project. If the file already contains servers, add **bulkgrid** inside its existing `mcpServers` object.
+
+    ```json .cursor/mcp.json
+    {
+      "mcpServers": {
+        "bulkgrid": {
+          "url": "https://bulkgrid.com/api/v1/mcp"
+        }
+      }
+    }
+    ```
+
+    Open Cursor's MCP settings, enable **bulkgrid**, and complete the browser authentication when prompted.
+
+    [Cursor MCP setup](https://cursor.com/docs/mcp)
+
+  </Tab>
+  <Tab title="OpenCode" icon="/logo/clients/opencode.svg">
+    Run OpenCode's interactive setup:
+
+    ```bash
+    opencode mcp add
+    ```
+
+    Choose a **remote** server, name it **bulkgrid**, and enter `https://bulkgrid.com/api/v1/mcp`. Then sign in:
+
+    ```bash
+    opencode mcp auth bulkgrid
+    ```
+
+    [OpenCode MCP setup](https://opencode.ai/docs/cli/#mcp)
+
+  </Tab>
+</Tabs>
+
+1. Open **Settings → Connected Apps** in Bulkgrid and copy the MCP URL.
+2. Add a remote MCP server in your AI app. Use OAuth with automatic client registration.
+3. Sign in to Bulkgrid in the browser, review the preselected workspace, choose collection access, and approve.
+4. Return to your AI app and enable the Bulkgrid tools.
+
+Use this flow in ChatGPT, Claude, Cursor, or another client that supports remote MCP with OAuth and automatic registration. Client setup screens vary; use the app's remote server or custom connector settings. You do not need to create an OAuth application, supply a callback URL, or copy a client secret.
+
+## Permissions
+
+OAuth grants `mcp:use` and `search:query` for the approved workspace and collections. A tool's collection filter can narrow these permissions but cannot expand them. Your user must remain a member of the workspace.
+
+Each user/client grant stays bound to one workspace, including after reauthorization. Use a separate client connection for another workspace. Manage and revoke access under **Settings → Connected Apps**.
+
+Search returns passages from indexed content; connecting an app does not automatically ingest new sources. Add [sources](/sources) and check indexing before testing search.
+
+## Connect with an API key
+
+For clients configured through bearer headers, create a key with `mcp:use` and `search:query`:
+
+```text
+Authorization: Bearer bg_live_your_api_key
+```
+
+The server also accepts `x-api-key`. Use one authentication method per connection.
+
+The [CLI](/cli) can configure supported clients:
+
+```bash
+export BULKGRID_MCP_URL='https://bulkgrid.com/api/v1/mcp'
+export BULKGRID_API_KEY='bg_live_your_api_key'
+npx -y @bulkgrid/cli init --all
+```
+
+Use `--cursor`, `--vscode`, `--claude`, or `--codex` for one client. Each AI app owns its connection; a separate `bulkgrid login` session does not authenticate the AI app.
+
+## Existing installation URLs
+
+Installation-specific URLs have been retired. Replace them with the shared `/api/v1/mcp` URL and approve access again.
+
+## Troubleshooting
+
+| Symptom                  | Check                                                                                   |
+| ------------------------ | --------------------------------------------------------------------------------------- |
+| OAuth setup cannot start | The client supports automatic OAuth registration and the URL is the shared MCP endpoint |
+| `401`                    | The token is invalid or expired, or the authentication header is missing                |
+| `403`                    | Connection revocation, membership, collection restrictions, or missing scopes           |
+| No results               | Sources are indexed and included in the approved collections                            |
+| GET returns `405`        | MCP requests use POST; opening the endpoint in a browser is not a connection test       |
+
+## Suggested agent instruction
+
+```text
+Use Bulkgrid to search indexed source content and ground answers in the collections available to this connection. Include source URLs when citing retrieved content.
+```
+
+## Retrieval tools
+
+OAuth and API keys with `mcp:use` and `search:query` can use:
+
+| Tool                      | Purpose                                                                                                                                                                    |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `list_sources`            | List sources available to the connection, with IDs, types and indexed-content availability. Optional `query` filters by name or URL; follow `nextCursor` for more results. |
+| `list_collections`        | Find accessible collections for focused searches.                                                                                                                          |
+| `search`                  | Retrieve relevant passages. Optional `sourceIds` and `collectionId` narrow the existing permissions.                                                                       |
+| `get_document`            | Read more indexed passages using a `source_document_id` from search as `documentId`. Follow `nextChunk` as `startChunk` for subsequent pages.                              |
+| `get_search_capabilities` | Inspect supported search options.                                                                                                                                          |
+
+Use `list_sources` when you need to discover available content, then search the relevant source IDs. Call `get_document` when an excerpt needs more context. It returns ordered indexed passages, which may overlap, rather than fetching the live website. Each response defaults to five passages and allows up to twenty.
+
+All retrieval tools enforce the connection's workspace and collection permissions. A source filter cannot grant access to another workspace or a source outside those permissions. Collection-limited connections only list sources with accessible documents.
+
+## Source management through scoped API keys
+
+The source-management tools in the repository build are available only to API-key connections, with `mcp:use` plus the operation scopes below. OAuth remains search-only. Tool availability depends on the deployed server version and the key's scopes; an agent should inspect its connected tools.
+
+| Tools                                             | Required operation scopes        |
+| ------------------------------------------------- | -------------------------------- |
+| `find_sources`, `get_source_status`               | `sources:read`                   |
+| `get_run`                                         | `runs:read`                      |
+| `get_source_analysis`                             | `sources:discover`               |
+| `analyze_source`                                  | `sources:discover`, `runs:write` |
+| `create_source` (`add_source` alias)              | `sources:write`                  |
+| `sync_source` (`recrawl_source` alias)            | `sources:write`, `runs:write`    |
+| `list_source_collections`, `get_collection_rules` | `collections:read`               |
+| `add_source_to_collection`                        | `collections:write`              |
+
+Use `analyze_source` to start asynchronous analysis, then `get_source_analysis` to read candidate paths, URL counts and warnings. Analysis can create a crawl run and consume resources. Adding a source can establish ongoing refresh; including it in a collection grants retrieval over its eligible documents. The API enforces workspace, collection and plan restrictions. A key's technical permissions do not replace the user's instructions about permitted sources, visibility, scope and budgets.
+
+Success payloads are exposed as `structuredContent.result`; API failures are tool errors with status and error details. Check source status before describing content as searchable. The `bulkgrid-sources` skill in the developer repository guides this workflow; `bulkgrid-search` handles answering from indexed content.

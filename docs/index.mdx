@@ -1,109 +1,140 @@
 ---
-title: Introduction
-description: Index sources, organize collections, and retrieve grounded content for your applications.
+title: Index
+description: Search indexed content and build retrieval workflows with Bulkgrid.
+icon: search
 ---
 
-Bulkgrid turns website and GitHub content into searchable knowledge. Add sources, organize their documents into collections, and give your application or AI client access to the content it needs.
+Use search when the content is already indexed and you want ranked results immediately.
 
-You can also crawl URLs and extract structured data as asynchronous jobs.
+Agent and API searches use collections. With “All collections” access, the search covers the union of the workspace's collections; with selected access, it covers only the authorized collections. No collections means no agent search results. Public sources must be included in a collection, but do not require subscription. Dashboard searches can browse the public catalog and the workspace's private sources.
 
-## Get started
+## When search is the right tool
 
-### Connect your coding agent
+Search is the right fit when you need:
 
-Choose your client, add Bulkgrid, and sign in through your browser. Review the preselected workspace and choose which collections the agent can access.
+- low-latency retrieval
+- result ranking for application search
+- grounding material for answer generation
+- collection-scoped access to existing content
 
-<Tabs>
-  <Tab title="Codex" icon="/logo/clients/codex.svg">
-    Run in your terminal with the Codex CLI installed:
+## Request examples
 
-    ```bash
-    codex mcp add bulkgrid --url https://bulkgrid.com/api/v1/mcp
-    ```
+Node.js and Python examples use the [Bulkgrid SDKs](/sdk). Set `BULKGRID_API_KEY` in your backend environment; cURL examples also use `BULKGRID_BASE_URL=https://bulkgrid.com`.
 
-    Complete the browser sign-in if prompted. To start sign-in separately, run `codex mcp login bulkgrid`. Open a new Codex session after connecting.
+<CodeGroup>
 
-    [Codex MCP setup](https://developers.openai.com/codex/mcp)
-  </Tab>
-  <Tab title="Claude Code" icon="/logo/clients/claude.svg">
-    Run in your project's terminal with Claude Code installed:
+```js Node.js
+import { BulkgridApiError, BulkgridClient } from '@bulkgrid/sdk';
 
-    ```bash
-    claude mcp add --transport http bulkgrid https://bulkgrid.com/api/v1/mcp
-    ```
+const client = new BulkgridClient({
+  apiKey: process.env.BULKGRID_API_KEY ?? '',
+  baseUrl: process.env.BULKGRID_BASE_URL ?? 'https://bulkgrid.com',
+});
 
-    Open Claude Code, run `/mcp`, and select **bulkgrid** to authenticate in your browser.
-
-    [Claude Code MCP setup](https://code.claude.com/docs/en/mcp)
-  </Tab>
-  <Tab title="Cursor" icon="/logo/clients/cursor.svg">
-    Add this server to `.cursor/mcp.json` in your project. If the file already contains servers, add **bulkgrid** inside its existing `mcpServers` object.
-
-    ```json .cursor/mcp.json
-    {
-      "mcpServers": {
-        "bulkgrid": {
-          "url": "https://bulkgrid.com/api/v1/mcp"
-        }
-      }
-    }
-    ```
-
-    Open Cursor's MCP settings, enable **bulkgrid**, and complete the browser authentication when prompted.
-
-    [Cursor MCP setup](https://cursor.com/docs/mcp)
-  </Tab>
-  <Tab title="OpenCode" icon="/logo/clients/opencode.svg">
-    Run OpenCode's interactive setup:
-
-    ```bash
-    opencode mcp add
-    ```
-
-    Choose a **remote** server, name it **bulkgrid**, and enter `https://bulkgrid.com/api/v1/mcp`. Then sign in:
-
-    ```bash
-    opencode mcp auth bulkgrid
-    ```
-
-    [OpenCode MCP setup](https://opencode.ai/docs/cli/#mcp)
-  </Tab>
-</Tabs>
-
-Once connected, try asking your agent:
-
-```text
-List the Bulkgrid collections I can access, then search the relevant collection to answer my question. Include source URLs.
+try {
+  const data = await client.index.search({
+    query: 'bulkgrid crawl options',
+    limit: 10,
+    fullTextWeight: 0.3,
+    semanticWeight: 0.7,
+    rrfK: 60,
+  });
+} catch (error) {
+  if (error instanceof BulkgridApiError) {
+    console.error(error.status, error.data);
+  }
+  throw error;
+}
 ```
 
-Your sources need to be indexed before search can return results. See [MCP setup](/integrations/mcp-server) for permissions, other clients, and troubleshooting.
+```python Python
+import os
+from bulkgrid import BulkgridClient
 
-### Build with Bulkgrid
+with BulkgridClient(
+    api_key=os.environ["BULKGRID_API_KEY"],
+    base_url=os.environ.get("BULKGRID_BASE_URL", "https://bulkgrid.com"),
+) as client:
+    data = client.index.search(
+        {
+            "query": "bulkgrid crawl options",
+            "limit": 10,
+            "fullTextWeight": 0.3,
+            "semanticWeight": 0.7,
+            "rrfK": 60,
+        }
+    )
+    print(data)
+```
 
-<CardGroup cols={2}>
-  <Card title="Make your first API request" icon="code" href="/getting-started/quickstart">
-    Create a crawl, wait for completion, and retrieve Markdown.
-  </Card>
-  <Card title="Connect an AI app" icon="plug" href="/integrations/mcp-server">
-    Connect ChatGPT, Claude, Cursor, or another OAuth-capable MCP client.
-  </Card>
-  <Card title="Use the CLI" icon="terminal" href="/getting-started/cli">
-    Sign in through your browser and configure supported AI clients.
-  </Card>
-  <Card title="Use the TypeScript SDK" icon="braces" href="/getting-started/sdk">
-    Call the API from a Node.js service or worker.
-  </Card>
-</CardGroup>
+```bash cURL
+curl "$BULKGRID_BASE_URL/api/v1/index/search" \
+  -H 'Content-Type: application/json' \
+  -H "x-api-key: $BULKGRID_API_KEY" \
+  -d '{
+    "query": "bulkgrid crawl options",
+    "limit": 10,
+    "fullTextWeight": 0.3,
+    "semanticWeight": 0.7,
+    "rrfK": 60
+  }'
+```
 
-## Choose a workflow
+</CodeGroup>
 
-| Goal                                        | Start here                                    |
-| ------------------------------------------- | --------------------------------------------- |
-| Keep a website or repository indexed        | [Sources](/guides/source-management)          |
-| Control what an app can search              | [Collections](/guides/collections-and-access) |
-| Retrieve relevant passages with source URLs | [Search](/guides/search)                      |
-| Process a known list of URLs                | [Crawl](/guides/crawl)                        |
-| Discover and process a site section         | [Deep crawl](/guides/deep-crawl)              |
-| Turn pages into structured fields           | [Extraction](/guides/extraction)              |
+## Ranking controls
 
-Search operates on content already indexed and accessible to your workspace. Start with [sources](/guides/source-management) if your search corpus is empty, or try the [Playground](/getting-started/playground-quickstart) before writing code.
+Bulkgrid currently exposes three main ranking controls:
+
+- `fullTextWeight`
+- `semanticWeight`
+- `rrfK`
+
+Use the defaults first. Tune only when you have a specific retrieval problem to solve.
+
+### Practical tuning guidance
+
+- increase `fullTextWeight` when exact keyword matches matter more
+- increase `semanticWeight` for natural-language search behavior
+- leave `rrfK` alone unless you are actively testing ranking behavior
+
+## Query expansion
+
+`queryMode` defaults to `none`, so one question runs one hybrid search with vector and keyword retrieval in parallel. Set it to `auto` to add at most one compact query variant. You can also provide up to three complementary strings in `queries`; each runs an additional hybrid search before results are fused. Use the original `query` for the main user request.
+
+## Response handling
+
+Search returns:
+
+- `query`
+- `scoring`
+- `results`
+- `count`
+
+Each result includes identifiers, source URL data, chunk text, ranking values, and metadata.
+
+## Common product patterns
+
+### Search UI
+
+Show:
+
+- `title`
+- `url`
+- trimmed `text_content`
+
+Keep `score` available for debugging and ranking analysis.
+
+### RAG or answer generation
+
+Pass the top results into your answer-generation step with source URLs attached so the model can be grounded and the UI can cite sources.
+
+### Scoped retrieval
+
+Use `collectionId` to narrow retrieval within the collections allowed by the credential. Enforce user access with scoped credentials and backend authorization; a client-supplied filter is not an access grant.
+
+## Failure handling
+
+- `400`: invalid payload or out-of-range values
+- `401`: invalid or missing API key
+- `429`: back off and retry with jitter
