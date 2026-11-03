@@ -1,8 +1,8 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "bulkgrid",
-  "version": "0.1.1",
-  "description": "Search indexed Bulkgrid sources and collections, read document passages, and answer with source citations.",
+  "version": "0.2.0",
+  "description": "Search indexed sources, crawl and map websites, extract structured data, and manage your index with approved permissions.",
   "author": {
     "name": "Bulkgrid AB"
   },
@@ -19,8 +19,8 @@
     "com.openai": {
       "interface": {
         "displayName": "Bulkgrid",
-        "shortDescription": "Search your trusted sources",
-        "longDescription": "Connect your Bulkgrid account to discover accessible indexed sources and collections, search relevant passages, and read documents for more context. Get answers grounded in retrieved evidence with links to the original sources. Access follows the workspace and collection permissions approved during sign-in. This plugin searches existing indexed content; it does not add sources, trigger syncs, or fetch live webpages. Search is subject to your Bulkgrid account limits. A Bulkgrid account is required. Page processing and source refresh are managed in Bulkgrid; this plugin provides search and retrieval only.",
+        "shortDescription": "Search, crawl and extract",
+        "longDescription": "Search indexed sources and collections and read documents with citations. With optional permissions approved during sign-in, crawl live pages, map website URLs, extract structured data, and add or refresh index sources and organize collections. Availability depends on the deployed server and your approved permissions. Crawling and extraction may consume credits; sources may refresh automatically. Existing connections must approve added permissions before using these capabilities. Monitoring is not included in OAuth app access. A Bulkgrid account is required.",
         "websiteURL": "https://bulkgrid.com",
         "logo": "./assets/icon.png",
         "composerIcon": "./assets/icon.png",
@@ -38,7 +38,12 @@
           "List collections",
           "Search indexed content",
           "Read document passages",
-          "Inspect search capabilities"
+          "Inspect search capabilities",
+          "Crawl and deep crawl websites",
+          "Map website URLs",
+          "Extract structured data",
+          "Read run results",
+          "Manage index sources and collections"
         ]
       },
       "review": {
@@ -73,26 +78,40 @@
               "prompt": "What search limits and ranking options does Bulkgrid support?",
               "tools_triggered": "get_search_capabilities",
               "expected_behavior": "Call with an empty object. Explain returned limits and weighting defaults accurately without inventing unsupported filters."
+            },
+            {
+              "description": "Connect to a deployed server with optional web permissions; use a reviewer-approved test URL and credit budget.",
+              "prompt": "Crawl https://example.com and show the resulting page content.",
+              "tools_triggered": "crawl, get_run, list_run_results, get_result_content",
+              "expected_behavior": "Start one run, check completion, read its results, and distinguish saved content from live state. Do not retry a mutation after an uncertain response."
+            },
+            {
+              "description": "Connect with web permissions and a reviewer-approved URL.",
+              "prompt": "Map https://example.com and extract the page title from its homepage.",
+              "tools_triggered": "map, extract, get_run, list_run_results",
+              "expected_behavior": "Map discovers URLs; extract returns structured fields. Track both run IDs and only claim completion after returned evidence."
+            },
+            {
+              "description": "Connect with optional index management permission to a disposable workspace and an approved private test source.",
+              "prompt": "Add https://example.com as a private source with at most 5 pages and create a collection for it.",
+              "tools_triggered": "find_sources, create_source, create_collection, add_source_to_collection, get_source_status",
+              "expected_behavior": "Reuse an eligible existing source when appropriate. Preserve private visibility and the page limit, clarify any required recurring refresh settings, and check indexing status."
             }
           ],
           "negative": [
             {
-              "description": "Source ingestion is outside this OAuth retrieval plugin. Explain that adding and syncing sources must be done in Bulkgrid; invoke no tools and claim no ingestion.",
-              "prompt": "Add https://example.com as a new Bulkgrid source and start crawling it."
+              "description": "With retrieval-only consent, explain that Crawl, Map, Extract and index management need optional permissions. Do not claim the action ran.",
+              "prompt": "Crawl https://example.com and add it to my index."
             },
             {
-              "description": "Deletion is unsupported. Explain the limitation without invoking tools or claiming deletion.",
-              "prompt": "Delete every source and collection in my Bulkgrid workspace."
-            },
-            {
-              "description": "The user explicitly excludes indexed retrieval. Explain that this plugin cannot fetch live pages; invoke no Bulkgrid tools or claim current coverage.",
-              "prompt": "Fetch the live contents of https://example.com right now, without using any indexed copy."
+              "description": "Monitoring is not available through OAuth. Explain the limitation without claiming to create a monitor.",
+              "prompt": "Monitor https://example.com for changes."
             }
           ]
         }
       },
       "publication": {
-        "release_notes": "Search and retrieval plugin with source discovery, collection-scoped search, indexed document reading, and citation guidance.",
+        "release_notes": "Adds guidance for optional Crawl, Map, Extract and index management permissions. Existing OAuth grants retain retrieval access until renewed consent.",
         "countries": []
       }
     }

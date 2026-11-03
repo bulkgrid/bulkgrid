@@ -29,7 +29,7 @@ Source analysis inspects candidate paths and estimates URL coverage. It can star
 
 Requires `sources:discover` and `runs:write`:
 
-Node.js and Python examples use the [Bulkgrid SDKs](/sdk). Set `BULKGRID_API_KEY` in your backend environment; cURL examples also use `BULKGRID_BASE_URL=https://bulkgrid.com`. CLI examples require the [Bulkgrid CLI](/cli) and an API key with the scopes listed below; browser login does not grant source-management permissions. Set `SOURCE_ID`, `ANALYSIS_ID`, and `RUN_ID` from returned IDs as needed.
+Node.js and Python examples use the [Bulkgrid SDKs](/sdk). Set `BULKGRID_API_KEY` in your backend environment; cURL examples also use `BULKGRID_BASE_URL=https://bulkgrid.com`. CLI examples require the [Bulkgrid CLI](/cli) and an API key with the scopes listed below; CLI source commands do not use the browser-login token. In Claude or ChatGPT, a supporting MCP deployment also accepts OAuth connections with explicit **Manage the index** consent. Retrieval-only grants cannot manage sources. Set `SOURCE_ID`, `ANALYSIS_ID`, and `RUN_ID` from returned IDs as needed.
 
 <CodeGroup>
 

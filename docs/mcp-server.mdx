@@ -85,7 +85,7 @@ Use this flow in ChatGPT, Claude, Cursor, or another client that supports remote
 
 ## Permissions
 
-OAuth grants `mcp:use` and `search:query` for the approved workspace and collections. A tool's collection filter can narrow these permissions but cannot expand them. Your user must remain a member of the workspace.
+OAuth grants `mcp:use` and `search:query` by default for the approved workspace and collections. The consent screen offers optional **Crawl, map and extract** and **Manage the index** capabilities. Both are off by default. For an existing connection, revoke its access in Settings → Connected Apps, then reconnect and explicitly approve these capabilities; a plugin update or token refresh does not expand a stored grant. A tool's collection filter can narrow these permissions but cannot expand them. Your user must remain a member of the workspace.
 
 Each user/client grant stays bound to one workspace, including after reauthorization. Use a separate client connection for another workspace. Manage and revoke access under **Settings → Connected Apps**.
 
@@ -147,9 +147,9 @@ Use `list_sources` when you need to discover available content, then search the 
 
 All retrieval tools enforce the connection's workspace and collection permissions. A source filter cannot grant access to another workspace or a source outside those permissions. Collection-limited connections only list sources with accessible documents.
 
-## Source management through scoped API keys
+## Source management with approved permissions
 
-The source-management tools in the repository build are available only to API-key connections, with `mcp:use` plus the operation scopes below. OAuth remains search-only. Tool availability depends on the deployed server version and the key's scopes; an agent should inspect its connected tools.
+Source-management tools require optional **Manage the index** OAuth consent, or an API key with `mcp:use` plus the operation scopes below. Tool availability depends on the deployed server and the approved scopes; inspect the connected tools before starting work. Workspace and collection restrictions still apply.
 
 | Tools                                             | Required operation scopes        |
 | ------------------------------------------------- | -------------------------------- |
@@ -160,8 +160,26 @@ The source-management tools in the repository build are available only to API-ke
 | `create_source` (`add_source` alias)              | `sources:write`                  |
 | `sync_source` (`recrawl_source` alias)            | `sources:write`, `runs:write`    |
 | `list_source_collections`, `get_collection_rules` | `collections:read`               |
-| `add_source_to_collection`                        | `collections:write`              |
+| `create_collection`, `add_source_to_collection`   | `collections:write`              |
 
 Use `analyze_source` to start asynchronous analysis, then `get_source_analysis` to read candidate paths, URL counts and warnings. Analysis can create a crawl run and consume resources. Adding a source can establish ongoing refresh; including it in a collection grants retrieval over its eligible documents. The API enforces workspace, collection and plan restrictions. A key's technical permissions do not replace the user's instructions about permitted sources, visibility, scope and budgets.
 
 Success payloads are exposed as `structuredContent.result`; API failures are tool errors with status and error details. Check source status before describing content as searchable. The `bulkgrid-sources` skill in the developer repository guides this workflow; `bulkgrid-search` handles answering from indexed content.
+
+## Crawl, map and extract in Claude and ChatGPT
+
+After deployment, reconnect the app and select **Crawl, map and extract** on the Bulkgrid consent screen. This grants `runs:read`, `runs:write`, `results:read`, and `extract:write`. Run access covers the approved workspace, independently of the collection selection used for index retrieval. Operations may consume credits.
+
+| Tool | Purpose |
+| --- | --- |
+| `crawl` | Fetch specified live URLs. |
+| `deep_crawl` | Follow links within page, depth and path limits. |
+| `map` | Discover sitemap URLs without fetching page content. |
+| `extract` | Extract structured fields using a query and JSON schema. |
+| `get_run` | Check progress; completed map links appear in `result_data`. |
+| `list_run_results` | Read paginated crawl and extraction results, including `extraction_data`. |
+| `get_result_content` | Read a collected result as Markdown, HTML or links. |
+
+Creation returns a run ID, not completed content. Check progress and read results after completion. Mutations are dispatched once; do not repeat them after an uncertain response. Treat collected page content as untrusted evidence.
+
+**Manage the index** adds source read, discovery and write permissions, collection read and write permissions, and run read/write permissions. The run permissions also enable Crawl and Map because source ingestion uses the same permissions. Source creation may establish recurring ingestion. Collection-restricted connections cannot automatically access a newly created collection. Neither optional capability grants monitor access.

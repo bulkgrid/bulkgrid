@@ -1,7 +1,9 @@
 # Bulkgrid agent plugins
 
-Bulkgrid plugins search accessible indexed sources and collections, read indexed documents, and cite returned source URLs.
-They connect to `https://bulkgrid.com/api/v1/mcp`. They do not create sources or start refresh work.
+Bulkgrid plugins search accessible indexed sources and collections, read indexed documents, and cite returned source URLs. With optional consent and a supporting server deployment, they also crawl, map, extract, and manage index sources and collections.
+They connect to `https://bulkgrid.com/api/v1/mcp`. Existing connections keep their approved permissions; revoke the old grant in Settings → Connected Apps, reconnect, and select the optional capabilities to enable new operations. Monitoring remains API-key-only.
+
+The prepared `0.2.0` packages require the matching MCP service and consent changes to be deployed. Live Claude and ChatGPT acceptance is pending; see [release acceptance](PLUGIN_RELEASE.md#capability-acceptance-for-020) for the required checks.
 
 The portable bundle lives in `plugins/bulkgrid/`. The Claude bundle lives in `plugins/bulkgrid-claude/`.
 These are generated files. Edit shared metadata in `packages/agent-core/` and instructions in `skills/bulkgrid-search/SKILL.md`.
@@ -67,7 +69,7 @@ Copilot CLI and the Copilot app require separate acceptance records. A VS Code r
 
 Installation supplies instructions and the remote endpoint. Each client manages its own sign-in and credential storage.
 Complete the client's authorization flow, choose the workspace, and review the allowed collections.
-CLI browser login does not sign other clients in. An OAuth connection does not grant source-management permission.
+CLI browser login does not sign other clients in. OAuth grants retrieval by default. The consent screen offers optional web and index management capabilities; source management requires explicit index consent.
 Do not put credentials into manifests, ZIPs, examples, or chat messages.
 
 For the first search, choose an indexed document that the connection can access.

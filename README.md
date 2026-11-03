@@ -148,6 +148,16 @@ https://bulkgrid.com/api/v1/mcp
 
 Complete browser sign-in, choose your workspace, and select the collections the connection can access. MCP retrieval searches indexed content and returns passages with source URLs.
 
+Claude and ChatGPT use the same MCP service. The updated integration offers these capabilities when the supporting service version is deployed:
+
+| App capability | Required consent |
+| --- | --- |
+| Search indexed content, list sources and collections, read documents | Default retrieval access |
+| Crawl, Deep Crawl, Map, Extract, and read run results | Optional **Crawl, map and extract** |
+| Add or refresh index sources and manage collection membership | Optional **Manage the index** |
+
+Both optional choices are off by default. Crawling and extraction may consume credits, and sources may refresh automatically. Index management also grants run permissions used by Crawl and Map. Monitoring remains available through scoped API keys, outside OAuth app access.
+
 For clients using `mcpServers` configuration:
 
 ```json
@@ -162,7 +172,7 @@ For clients using `mcpServers` configuration:
 
 Try: “Use Bulkgrid to find how authentication works in our documentation. Search the relevant collection and cite the source URLs.”
 
-See [MCP setup](docs/mcp-server.mdx) for client instructions and [agent plugins](AGENT_PLUGINS.md) for installation and acceptance status. OAuth connections have retrieval access; source management requires an API key with explicit operation scopes.
+For an existing connection, revoke its access in **Settings → Connected Apps**, then reconnect and approve the desired optional capabilities. Updating the plugin or refreshing a token does not add permissions. See [MCP setup](docs/mcp-server.mdx) for instructions and [agent plugins](AGENT_PLUGINS.md) for deployment and client acceptance status.
 
 ## CLI and agent skills
 
@@ -177,7 +187,7 @@ Source commands include `analyze`, `analyze-github`, `add`, `add-github`, `statu
 
 | Skill                                                | Purpose                                                            |
 | ---------------------------------------------------- | ------------------------------------------------------------------ |
-| [bulkgrid-search](skills/bulkgrid-search/SKILL.md)   | Retrieve indexed evidence and answer with citations.               |
+| [bulkgrid-search](skills/bulkgrid-search/SKILL.md)   | Retrieve cited evidence; use approved crawl, map, extraction, and index tools. |
 | [bulkgrid-sources](skills/bulkgrid-sources/SKILL.md) | Inspect sources, manage ingestion, and organize collection access. |
 
 Skills guide tool use; they do not create a connection or grant permissions.

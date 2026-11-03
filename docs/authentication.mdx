@@ -70,7 +70,7 @@ Add `https://bulkgrid.com/api/v1/mcp` to a compatible AI client, or run `bulkgri
 
 Your browser opens Bulkgrid's consent page. Sign in if needed, select the workspace and collection access, and approve the connection. Your current workspace is preselected when available. The client receives tokens and handles refresh.
 
-OAuth access tokens are sent as `Authorization: Bearer <access-token>`. They currently grant `mcp:use` and `search:query`; live searches create their own saved Search runs, but these tokens do not authorize optional crawling, standalone run creation, managing sources, or fetching arbitrary run results. Use a suitably scoped API key for those operations.
+OAuth access tokens are sent as `Authorization: Bearer <access-token>`. By default, grants include `mcp:use` and `search:query`. On a supporting deployment, the consent screen offers optional **Crawl, map and extract** access for web operations and workspace run results, and **Manage the index** access for source and collection operations. Index management includes run permissions used for ingestion, Crawl and Map. Both options are off by default; existing grants do not expand when a plugin updates or a token refreshes. Revoke an existing grant in Settings → Connected Apps, reconnect, and approve the desired capabilities. Monitoring remains API-key-only. See [MCP permissions](/mcp-server#permissions) for details.
 
 ## Workspace and collection boundaries
 

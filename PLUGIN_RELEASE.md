@@ -2,6 +2,7 @@
 
 Plugin releases use independent semantic versions and `plugin-v<version>` tags. SDK and CLI releases keep their existing identities.
 Version `0.1.1` identifies the migration baseline. It does not establish that the version is available for publication.
+Version `0.2.0` is the prepared capability expansion for Claude and ChatGPT: optional Crawl, Map, Extract, and index management. It is not a claim of deployment, publication, or completed client acceptance.
 Before release, a named operator must make sure that the version does not conflict with an existing submission or published artifact.
 
 ## Build and inspect
@@ -22,7 +23,7 @@ For an intended source change, run `npm run plugins:build`, inspect the output, 
 Keep ZIPs in `dist/plugins/` as release artifacts. They are not authoring sources.
 
 Review the archives, inventories, SHA-256 digests, and release record together.
-Make sure that every package contains only the retrieval skill, public metadata, required configuration, assets and license files.
+Make sure that every package contains only the shared `bulkgrid-search` skill (including approved web and index workflows), public metadata, required configuration, assets and license files. The standalone `bulkgrid-sources` skill is not bundled.
 Make sure that the recorded version agrees with each manifest and archive filename.
 Run the tests against extracted archives, rather than relying only on workspace inspection.
 Local dirty inputs cannot establish an accepted release commit. Commit the reviewed changes before tagging.
@@ -50,6 +51,23 @@ If immutable releases are enabled, attach every file before publication.
 Never move a published tag or replace an immutable asset. Corrected content requires a new version.
 
 ## Directory submissions
+
+### Capability acceptance for 0.2.0
+
+Deploy the corresponding MCP service and optional consent flow before testing or advertising the new capabilities. Updating a package alone cannot enable the server tools. Record the deployed service version alongside each tested app version and operating system.
+
+For both Claude and ChatGPT, test:
+
+- Existing and newly approved retrieval-only connections still expose retrieval tools without web or index management access.
+- Revoke the old grant through Settings → Connected Apps, reconnect, and verify that both optional capability choices start unchecked.
+- With **Crawl, map and extract**, start bounded test runs, check progress, paginate results, and read collected content and extraction fields. Verify Map returns URLs rather than page content.
+- With **Manage the index**, add or reuse an approved test source, check indexing, create a collection, and update membership within the grant's collection boundaries. Verify the accompanying Crawl and Map access described during consent.
+- Denied scopes, inaccessible collections, and API quota errors remain errors; uncertain mutations are not automatically repeated.
+- Monitoring tools remain unavailable through OAuth, and revoking the connection removes its access.
+
+Use disposable fixtures and an explicit credit budget. Track pending results honestly; package validation and unit tests do not establish live client acceptance.
+
+### Submission channels
 
 The public repository owns plugin contributions. The hosted MCP service follows the separate private platform release process.
 Complete account readiness and review evidence before submitting a plugin.
@@ -80,6 +98,6 @@ Retry the failed channel with the same accepted artifact when its host permits t
 For a broken catalog pointer, restore the previous accepted target when the host permits it.
 Keep the previous tested release available. Backend failures use the private platform recovery process.
 
-Release logs and artifact digests provide build feedback. Client records provide connection and retrieval feedback.
+Release logs and artifact digests provide build feedback. Client records provide consent, retrieval, web-operation, and index-management feedback.
 Do not add query or passage logging for this migration. Name a support operator before publication.
 Account setup, npm publisher migration, live tests, directory submissions and publication remain pending.

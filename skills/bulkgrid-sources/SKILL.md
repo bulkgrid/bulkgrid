@@ -1,6 +1,6 @@
 ---
 name: bulkgrid-sources
-description: Analyze, inspect, and add sources to Bulkgrid, assess ingestion scope, organize collection access, and track indexing readiness. Use when the user asks to prepare or manage content for retrieval. Requires explicitly scoped API-key access for management; OAuth connections remain search-only.
+description: Analyze, inspect, and add sources to Bulkgrid, assess ingestion scope, organize collection access, and track indexing readiness. Use when the user asks to prepare or manage content for retrieval. Requires a scoped API key or OAuth consent for index management on a supporting server.
 license: Apache-2.0
 ---
 
@@ -10,7 +10,7 @@ Help the user make the right content searchable: check existing coverage, inspec
 
 ## Choose an available interface
 
-Prefer connected Bulkgrid MCP management tools when present. Tool availability depends on the API key's scopes; do not invent a tool or assume that a search connection has write access. API-key MCP also requires `mcp:use`. Current OAuth grants and CLI OAuth login remain search-only.
+Prefer connected Bulkgrid MCP management tools when present. Tool availability depends on the deployed server and the connection's approved scopes; do not invent a tool or assume that a search connection has write access. API-key MCP also requires `mcp:use`. OAuth grants retrieval by default. Optional **Manage the index** consent enables source and collection operations on a supporting server, plus run permissions used for ingestion, Crawl and Map. Existing connections must revoke their old grant in Bulkgrid Settings → Connected Apps, reconnect, and approve the additional access. CLI source commands still require an API key even when a separate OAuth connection has management permission.
 
 The CLI source commands use `BULKGRID_API_KEY` and optional `BULKGRID_URL`. Their output is JSON. The TypeScript SDK uses `BulkgridClient` with an API key and base URL. Use the installed version's help/schema; older releases may lack these operations. Never request secrets in chat, embed them in scripts, or substitute OAuth tokens for API keys.
 
@@ -23,9 +23,9 @@ The CLI source commands use `BULKGRID_API_KEY` and optional `BULKGRID_URL`. Thei
 | Check ingestion            | `get_source_status`   | `status <id>`              | `status(id)`             | `sources:read`                   |
 | Refresh existing source    | `recrawl_source`      | `recrawl <id>`             | `recrawl(id)`            | `sources:write`, `runs:write`    |
 
-For collection management, use `list_source_collections` / `sources collections`, `get_collection_rules` / `sources rules <collectionId>` (`collections:read`), and `add_source_to_collection` / `sources include <sourceId> <collectionId>` (`collections:write`). SDK equivalents are `client.index.collections.list()`, `.rules(id)`, and `.addSource({sourceId, collectionId})`.
+For collection management, use `list_source_collections` / `sources collections`, `get_collection_rules` / `sources rules <collectionId>` (`collections:read`), and `add_source_to_collection` / `sources include <sourceId> <collectionId>` (`collections:write`). Use `create_collection` when the user requests a new collection and the tool is available. A collection-restricted grant does not automatically gain access to new collections. SDK equivalents are `client.index.collections.list()`, `.rules(id)`, `.create(input)`, and `.addSource({sourceId, collectionId})`.
 
-These MCP/CLI add commands handle website sources. GitHub repositories use the SDK's separate `index.sources.createGithub` workflow; inspect its schema and repository access requirements instead of sending a GitHub repository URL as a domain source.
+These website add commands handle domain sources. For GitHub repositories, inspect the available `analyze_github_source` and `add_github_source` MCP tools, CLI GitHub commands, or the SDK's `index.sources.createGithub` workflow. Follow their repository access requirements instead of sending a GitHub repository URL as a domain source.
 
 ## Establish scope and inspect first
 
