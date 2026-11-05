@@ -40,7 +40,7 @@ const preservedFiles = [
   'MAINTAINERS.md',
   'CONTRIBUTING.md',
   'package-lock.json',
-  'skills/bulkgrid-search/SKILL.md',
+  'skills/bulkgrid/SKILL.md',
   'skills/bulkgrid-sources/SKILL.md',
   'plugins/bulkgrid/plugin.json',
   'packages/agent-core/metadata.json',

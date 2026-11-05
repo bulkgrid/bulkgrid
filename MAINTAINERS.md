@@ -54,7 +54,7 @@ On macOS, use `TMPDIR=/private/tmp npm run check` if the plugin archive tests re
 
 ## Ownership and generation
 
-Author plugin resources and shared skills in this public repository. Keep `skills/bulkgrid-search` as the shared retrieval source and keep source-management guidance in the separate `skills/bulkgrid-sources` skill. Generate installable plugin copies from their public source with the plugin scripts; do not edit generated copies directly.
+Author plugin resources and shared skills in this public repository. Keep `skills/bulkgrid` as the shared search, crawl, extraction, and index workflow source and keep source-management guidance in the separate `skills/bulkgrid-sources` skill. Generate installable plugin copies from their public source with the plugin scripts; do not edit generated copies directly.
 
 The private platform remains the source for SDKs, CLI, contracts, and service documentation. OpenAPI and contract output is generated from the platform schemas. Do not edit `packages/contracts/generated` or synchronized OpenAPI output independently.
 

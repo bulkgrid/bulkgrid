@@ -154,7 +154,7 @@ describe('plugin packaging', () => {
     const portablePackage = extracted.get('bulkgrid');
     assert.ok(portablePackage);
     await copyPackage(portablePackage, fixture);
-    await appendFile(path.join(fixture, 'skills/bulkgrid-search/SKILL.md'), '\n[escape](../../../../outside.md)\n');
+    await appendFile(path.join(fixture, 'skills/bulkgrid/SKILL.md'), '\n[escape](../../../../outside.md)\n');
     const portableOutput = outputById('bulkgrid');
     await assert.rejects(
       validatePackageDirectory(fixture, portableOutput, expectedFilesFor(expected, portableOutput)),
@@ -199,7 +199,7 @@ describe('plugin packaging', () => {
 
     const credentialFile = path.join(temporaryRoot, 'credential-fixture');
     await copyPackage(portablePackage, credentialFile);
-    await appendFile(path.join(credentialFile, 'skills/bulkgrid-search/SKILL.md'), '\nbg_live_12345678901234567890\n');
+    await appendFile(path.join(credentialFile, 'skills/bulkgrid/SKILL.md'), '\nbg_live_12345678901234567890\n');
     await assert.rejects(validatePackageDirectory(credentialFile, portableOutput, portableFiles), /Credential-like value/);
 
     const symlinkPackage = path.join(temporaryRoot, 'symlink-fixture');
@@ -235,13 +235,13 @@ describe('plugin packaging', () => {
     for (const directory of ['packages/agent-core', 'packages/agent-claude', 'skills', 'scripts/plugins']) {
       await cp(path.join(ROOT, directory), path.join(fixtureRoot, directory), { recursive: true });
     }
-    const privateFile = path.join(fixtureRoot, 'skills/bulkgrid-search/private.pem');
+    const privateFile = path.join(fixtureRoot, 'skills/bulkgrid/private.pem');
     await writeFile(privateFile, '-----BEGIN PRIVATE KEY-----\nnot a real key\n');
     const fixtureBuild = path.join(fixtureRoot, 'scripts/plugins/build.ts');
     const failure = runTsxResult(fixtureBuild);
     assert.equal(failure.status, 1, failure.stderr);
     assert.match(failure.stderr, /Private or unsupported skill source file: private\.pem/);
-    await assert.rejects(readFile(path.join(fixtureRoot, 'plugins/bulkgrid/skills/bulkgrid-search/private.pem')), {
+    await assert.rejects(readFile(path.join(fixtureRoot, 'plugins/bulkgrid/skills/bulkgrid/private.pem')), {
       code: 'ENOENT',
     });
   });

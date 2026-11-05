@@ -1,6 +1,6 @@
 # License for shared skills
 
-The canonical skills at `skills/bulkgrid-search/SKILL.md` and
+The canonical skills at `skills/bulkgrid/SKILL.md` and
 `skills/bulkgrid-sources/SKILL.md` are licensed under the Apache License,
 Version 2.0. The complete license text is in `packages/agent-core/LICENSE`.
 

@@ -23,7 +23,7 @@ For an intended source change, run `npm run plugins:build`, inspect the output, 
 Keep ZIPs in `dist/plugins/` as release artifacts. They are not authoring sources.
 
 Review the archives, inventories, SHA-256 digests, and release record together.
-Make sure that every package contains only the shared `bulkgrid-search` skill (including approved web and index workflows), public metadata, required configuration, assets and license files. The standalone `bulkgrid-sources` skill is not bundled.
+Make sure that every package contains only the shared `bulkgrid` skill (including approved web and index workflows), public metadata, required configuration, assets and license files. The standalone `bulkgrid-sources` skill is not bundled.
 Make sure that the recorded version agrees with each manifest and archive filename.
 Run the tests against extracted archives, rather than relying only on workspace inspection.
 Local dirty inputs cannot establish an accepted release commit. Commit the reviewed changes before tagging.

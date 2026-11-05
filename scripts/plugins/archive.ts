@@ -128,7 +128,7 @@ function dirtyInputPaths(): string[] {
     'packages/agent-claude/package.json',
     'packages/agent-claude/templates',
     'skills/LICENSE.md',
-    'skills/bulkgrid-search',
+    'skills/bulkgrid',
     'scripts/plugins',
     'plugins/bulkgrid',
     'plugins/bulkgrid-claude',

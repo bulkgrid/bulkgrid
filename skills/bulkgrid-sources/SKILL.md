@@ -6,7 +6,7 @@ license: Apache-2.0
 
 # Prepare sources for retrieval
 
-Help the user make the right content searchable: check existing coverage, inspect the source, establish ingestion boundaries, add or subscribe, verify collection access, then check readiness. Use `bulkgrid-search` for answering questions from indexed content. Missing search results alone do not authorize adding or crawling a source.
+Help the user make the right content searchable: check existing coverage, inspect the source, establish ingestion boundaries, add or subscribe, verify collection access, then check readiness. Use `bulkgrid` for answering questions from indexed content. Missing search results alone do not authorize adding or crawling a source.
 
 ## Choose an available interface
 

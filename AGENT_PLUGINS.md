@@ -6,7 +6,7 @@ They connect to `https://bulkgrid.com/api/v1/mcp`. Existing connections keep the
 The prepared `0.2.0` packages require the matching MCP service and consent changes to be deployed. Live Claude and ChatGPT acceptance is pending; see [release acceptance](PLUGIN_RELEASE.md#capability-acceptance-for-020) for the required checks.
 
 The portable bundle lives in `plugins/bulkgrid/`. The Claude bundle lives in `plugins/bulkgrid-claude/`.
-These are generated files. Edit shared metadata in `packages/agent-core/` and instructions in `skills/bulkgrid-search/SKILL.md`.
+These are generated files. Edit shared metadata in `packages/agent-core/` and instructions in `skills/bulkgrid/SKILL.md`.
 `bulkgrid-sources` remains a separate optional skill with explicit management permissions.
 
 ## Installation candidates

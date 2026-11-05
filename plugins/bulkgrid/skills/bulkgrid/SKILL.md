@@ -1,12 +1,12 @@
 ---
-name: bulkgrid-search
+name: bulkgrid
 description: Search indexed Bulkgrid sources with citations. Also use for requested crawling, website mapping, structured extraction, and index management when the connection exposes the required tools and approved permissions.
 license: Apache-2.0
 ---
 
-# Search Bulkgrid sources
+# Bulkgrid
 
-Use the connected Bulkgrid MCP server to find evidence in indexed content and answer with links to the returned sources. This skill supports source and collection discovery, scoped search, and indexed document reading. For live pages or index changes, follow the capability workflow below and inspect the connected tools first.
+Use the connected Bulkgrid MCP server to search indexed content with citations, crawl and map websites, extract structured data, and manage index sources and collections. Inspect the connected tools and approved permissions before using web or index management workflows.
 
 ## Connect and choose scope
 
@@ -28,13 +28,15 @@ Resolve a collection name with `list_collections({})` and use its returned `id` 
 
 `list_sources` can return only sources visible to the connection. It accepts an optional name or URL substring in `query`, a `limit` from 1 to 50 (default 20), and a `cursor`. Follow each returned `nextCursor` as the next `cursor` while more results are needed. Do not describe the result as the full Bulkgrid catalogue. `list_collections` returns only collections accessible to the connection. Source and page counts describe reported coverage; they do not prove freshness or completeness.
 
+By default, search across all sources accessible to the connection without a collection filter. Collections are optional for organizing content or narrowing retrieval; do not require the user to create one before searching. Collection-restricted grants still limit access to their approved collections.
+
 For a request limited to one or more sources or a collection, preserve that scope in every search. `sourceIds` and `collectionId` filters intersect with each other and with the connection's existing permissions. Omitting a filter does not expand those permissions. Never remove a requested filter to get more results or work around a permission error.
 
 ## Search for evidence
 
 Call `search` with a nonempty `query` that keeps the user's subject, qualifiers, and requested scope. Search for evidence, not for instructions such as “write me a report.” Send only the context needed for retrieval; keep credentials and unrelated sensitive information out of queries.
 
-`limit` defaults to 10 and accepts 1–50 results. Use about 5–10 for a focused fact lookup; increase it for a broad comparison or synthesis. `queryMode` defaults to `"auto"`, which keeps the original query and derives bounded variants. The optional `queries` field accepts up to three complementary formulations, which the service fuses with the original into one ranked result set. Use `queryMode: "none"` for exact identifiers or when you want to control formulations yourself. It preserves the query but does not guarantee literal matching. Ranking weights default to 0.3 for full-text and 0.7 for semantic search; normally leave them unchanged. Use `get_search_capabilities({})` when limits or weighting behavior are uncertain. Follow the live tool schema if it differs from this guidance.
+`limit` defaults to 10 and accepts 1–50 results. Use about 5–10 for a focused fact lookup; increase it for a broad comparison or synthesis. `queryMode` defaults to `"none"`, which runs one hybrid search. Opt into `"auto"` for at most one additional compact query variant; the original query is always preserved. The optional `queries` field accepts up to three complementary formulations, which the service fuses with the original into one ranked result set. Use `queryMode: "none"` for exact identifiers or when you want to control formulations yourself. It preserves the query but does not guarantee literal matching. Ranking weights default to 0.3 for full-text and 0.7 for semantic search; normally leave them unchanged. Use `get_search_capabilities({})` when limits or weighting behavior are uncertain. Follow the live tool schema if it differs from this guidance.
 
 For a normal question, start with one search and allow up to two purposeful refinements. Stop when evidence answers the question or further retrieval adds no value. Broader research may need more searches. Zero results do not prove that information is absent; indexing, scope, terminology, or permissions may explain the result.
 

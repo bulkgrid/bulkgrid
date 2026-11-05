@@ -1,7 +1,7 @@
 {
   "name": "bulkgrid",
   "displayName": "Bulkgrid",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Search indexed sources, crawl and map websites, extract structured data, and manage your index with approved permissions.",
   "author": {
     "name": "Bulkgrid AB"

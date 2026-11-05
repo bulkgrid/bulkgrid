@@ -62,7 +62,7 @@ export const OUTPUTS: readonly PluginOutput[] = [
   },
 ];
 
-const SKILL_SOURCE = 'skills/bulkgrid-search';
+const SKILL_SOURCE = 'skills/bulkgrid';
 
 const CATALOGS: readonly {
   readonly file: string;
@@ -185,7 +185,7 @@ export async function sourceFiles(output: PluginOutput): Promise<ExpectedPackage
         !/submission[-_]notes/.test(name),
       `Private or unsupported skill source file: ${skillPath}`,
     );
-    files.set(`skills/bulkgrid-search/${skillPath}`, await readFile(file));
+    files.set(`skills/bulkgrid/${skillPath}`, await readFile(file));
   }
   return files;
 }

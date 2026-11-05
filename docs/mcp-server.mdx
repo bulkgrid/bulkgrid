@@ -164,7 +164,7 @@ Source-management tools require optional **Manage the index** OAuth consent, or 
 
 Use `analyze_source` to start asynchronous analysis, then `get_source_analysis` to read candidate paths, URL counts and warnings. Analysis can create a crawl run and consume resources. Adding a source can establish ongoing refresh; including it in a collection grants retrieval over its eligible documents. The API enforces workspace, collection and plan restrictions. A key's technical permissions do not replace the user's instructions about permitted sources, visibility, scope and budgets.
 
-Success payloads are exposed as `structuredContent.result`; API failures are tool errors with status and error details. Check source status before describing content as searchable. The `bulkgrid-sources` skill in the developer repository guides this workflow; `bulkgrid-search` handles answering from indexed content.
+Success payloads are exposed as `structuredContent.result`; API failures are tool errors with status and error details. Check source status before describing content as searchable. The `bulkgrid-sources` skill in the developer repository guides this workflow; `bulkgrid` handles answering from indexed content.
 
 ## Crawl, map and extract in Claude and ChatGPT
 

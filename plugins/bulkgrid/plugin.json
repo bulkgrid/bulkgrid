@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "bulkgrid",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Search indexed sources, crawl and map websites, extract structured data, and manage your index with approved permissions.",
   "author": {
     "name": "Bulkgrid AB"
@@ -19,7 +19,7 @@
     "com.openai": {
       "interface": {
         "displayName": "Bulkgrid",
-        "shortDescription": "Search, crawl and extract",
+        "shortDescription": "Search, crawl, extract & index",
         "longDescription": "Search indexed sources and collections and read documents with citations. With optional permissions approved during sign-in, crawl live pages, map website URLs, extract structured data, and add or refresh index sources and organize collections. Availability depends on the deployed server and your approved permissions. Crawling and extraction may consume credits; sources may refresh automatically. Existing connections must approve added permissions before using these capabilities. Monitoring is not included in OAuth app access. A Bulkgrid account is required.",
         "websiteURL": "https://bulkgrid.com",
         "logo": "./assets/icon.png",
@@ -44,17 +44,12 @@
           "Extract structured data",
           "Read run results",
           "Manage index sources and collections"
-        ]
+        ],
+        "category": "Productivity"
       },
       "review": {
         "test_cases": {
           "positive": [
-            {
-              "description": "Connect through OAuth to a dedicated workspace with at least one indexed source.",
-              "prompt": "What sources can I search in Bulkgrid?",
-              "tools_triggered": "list_sources",
-              "expected_behavior": "List only returned accessible sources with names, URLs and indexing availability. Follow nextCursor if needed; do not claim indexing availability proves freshness."
-            },
             {
               "description": "Connect to a workspace containing an indexed documentation source with known content. Reviewer must choose and record a real topic before running.",
               "prompt": "Find an indexed documentation source, explain one topic it covers, and cite the evidence.",
@@ -62,22 +57,10 @@
               "expected_behavior": "Resolve a returned source ID, use sourceIds to restrict search to it, and support the explanation with returned passages and source URLs."
             },
             {
-              "description": "Connect to a workspace with at least one accessible nonempty collection.",
-              "prompt": "Show my collections, choose one with indexed content, and summarize a topic using only that collection.",
-              "tools_triggered": "list_collections, search",
-              "expected_behavior": "Use the selected returned UUID as collectionId on every search. Explain the selection, cite returned URLs, and do not silently widen scope."
-            },
-            {
               "description": "Run after a successful search in this conversation returns a document with more than five indexed chunks.",
               "prompt": "Read the full indexed document behind the first result and explain its main points with citations.",
               "tools_triggered": "get_document",
               "expected_behavior": "Pass the first result source_document_id as documentId. Read from startChunk 0 and follow nextChunk as startChunk until null. Account for overlapping passages; describe indexed coverage rather than claiming to fetch the live page."
-            },
-            {
-              "description": "OAuth connection established; no content fixture required.",
-              "prompt": "What search limits and ranking options does Bulkgrid support?",
-              "tools_triggered": "get_search_capabilities",
-              "expected_behavior": "Call with an empty object. Explain returned limits and weighting defaults accurately without inventing unsupported filters."
             },
             {
               "description": "Connect to a deployed server with optional web permissions; use a reviewer-approved test URL and credit budget.",
@@ -106,13 +89,21 @@
             {
               "description": "Monitoring is not available through OAuth. Explain the limitation without claiming to create a monitor.",
               "prompt": "Monitor https://example.com for changes."
+            },
+            {
+              "description": "Bulk source and collection deletion is not exposed by the app. Explain the limitation; do not invoke unrelated tools or claim deletion.",
+              "prompt": "Delete every source and collection in my workspace."
             }
           ]
-        }
+        },
+        "prompts": [
+          "Search my Bulkgrid sources and answer with citations.",
+          "Crawl https://example.com and show the resulting page content.",
+          "Map https://example.com and extract the page title from its homepage."
+        ]
       },
       "publication": {
-        "release_notes": "Adds guidance for optional Crawl, Map, Extract and index management permissions. Existing OAuth grants retain retrieval access until renewed consent.",
-        "countries": []
+        "release_notes": "Adds guidance for optional Crawl, Map, Extract and index management permissions. Existing OAuth grants retain retrieval access until renewed consent."
       }
     }
   }

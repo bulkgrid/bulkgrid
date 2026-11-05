@@ -187,7 +187,7 @@ Source commands include `analyze`, `analyze-github`, `add`, `add-github`, `statu
 
 | Skill                                                | Purpose                                                            |
 | ---------------------------------------------------- | ------------------------------------------------------------------ |
-| [bulkgrid-search](skills/bulkgrid-search/SKILL.md)   | Retrieve cited evidence; use approved crawl, map, extraction, and index tools. |
+| [bulkgrid](skills/bulkgrid/SKILL.md)   | Retrieve cited evidence; use approved crawl, map, extraction, and index tools. |
 | [bulkgrid-sources](skills/bulkgrid-sources/SKILL.md) | Inspect sources, manage ingestion, and organize collection access. |
 
 Skills guide tool use; they do not create a connection or grant permissions.
