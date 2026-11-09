@@ -28,6 +28,21 @@ Make sure that the recorded version agrees with each manifest and archive filena
 Run the tests against extracted archives, rather than relying only on workspace inspection.
 Local dirty inputs cannot establish an accepted release commit. Commit the reviewed changes before tagging.
 
+## MCP submission checks
+
+Before submission, complete the checks in the [OpenAI MCP requirements](https://developers.openai.com/plugins/plugin-guidelines#mcp-requirements).
+Automated package tests do not replace these live checks:
+
+- Test ChatGPT on desktop and mobile with a populated test workspace. Record the client version, date, package version, and results.
+- Test source and collection restrictions, document pagination, citations, expired authorization, revocation, invalid arguments, and quota errors.
+- Review the consent screen. Make sure that it explains the requested retrieval permissions and does not request source-management access.
+- Inspect populated tool responses. Keep citation and navigation fields, and exclude internal storage IDs, ranking diagnostics, and unrelated metadata.
+- Provide reviewers with a fully featured demo account and sample data through the submission process. Do not commit credentials or send them in chat. Reviewers must not need a new signup or an inaccessible second authentication step.
+- Make sure that the published privacy policy describes actual data collection, recipients, retention timelines, and user controls. Include the treatment of MCP queries, operational logs, indexed content, and backups. Do not invent retention periods.
+- Keep the existing 18+ service policy. Obtain clarification from OpenAI about public Directory eligibility before submission.
+
+Keep an unverified check pending until an operator records evidence. Select an unused release version before distributing changed plugin content.
+
 ## Manual draft workflow
 
 The workflow `.github/workflows/plugin-release.yml` accepts an existing `plugin-v<version>` tag.
