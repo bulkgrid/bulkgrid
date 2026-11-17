@@ -1,9 +1,9 @@
 ---
 title: CLI
-description: Install the Bulkgrid CLI, sign in, and configure AI clients.
+description: Search, crawl, extract, manage sources, and install agent skills with the Bulkgrid CLI.
 ---
 
-The Bulkgrid CLI supports browser login, connection status, logout, MCP client configuration, and API-key source management. Use the [API](/first-crawl-request) or [SDK](/sdk) to submit crawl and extraction jobs; the CLI does not provide crawl or search subcommands.
+The Bulkgrid CLI supports live search, indexed retrieval, mapping, crawling, extraction, run results, source management, and agent skill installation. These workflows are introduced in CLI 0.5.0; repository changes may precede the npm release. Check `bulkgrid --version` and command help for your installed version. Browser login and MCP configuration remain separate connection workflows.
 
 ## Install
 
@@ -17,6 +17,50 @@ You can also run commands without installing globally:
 ```bash
 npx -y @bulkgrid/cli login
 ```
+
+## Install skills for coding agents
+
+```bash
+bulkgrid setup skills
+bulkgrid setup skills --global
+bulkgrid setup skills --directory .claude/skills --dry-run
+```
+
+The installer copies all six bundled skills into the project's `.agents/skills` by default. `--global` uses `~/.agents/skills`; `--directory` selects another location. No authentication or network access is needed. Existing modified skills are skipped unless `--force` explicitly replaces them. Use `--list` to inspect bundled names or `--skill` to select specific skills. The current skill instructions require CLI 0.6.0 or newer, including browser login and document parsing; sync the CLI implementation before releasing this bundle. The skills prefer CLI execution when a terminal is available and retain MCP/SDK fallback guidance.
+
+## Search, crawl and extract
+
+Set `BULKGRID_API_KEY` in your environment. API commands use this key, not saved CLI OAuth tokens. Use `BULKGRID_URL` or `--url` to select another deployment.
+
+```bash
+bulkgrid search "solar panel recycling" --limit 5
+bulkgrid search "solar panels" --type news --limit 5 --crawl --formats markdown
+bulkgrid map https://example.com --limit 100 --no-subdomains
+bulkgrid crawl https://example.com --formats markdown
+bulkgrid deep-crawl https://example.com/docs --max-pages 20 --max-depth 2 --include-paths /docs
+bulkgrid extract https://example.com/product --query "Product name and listed price" --schema-file product-schema.json
+bulkgrid index search "authentication setup" --limit 5
+```
+
+Prepare `product-schema.json` as a JSON Schema object before extraction, or use `--schema` for inline JSON. `search` discovers live pages, images, or news; `index search` retrieves indexed passages. Use `--collection-id` and `--source-ids` to narrow indexed retrieval. Crawl collects exact URLs; Deep Crawl requires page/depth limits and stays under the starting path by default.
+
+API commands return JSON, except saved page content, which is raw text. Add `--output FILE` to save a response. API errors go to stderr with a nonzero exit status. Commands do not automatically retry submissions. See [API-key scopes](/api-key-scopes) for operation permissions; crawling and extraction may consume credits.
+
+## Read runs and results
+
+Use IDs returned by the service in place of the uppercase placeholders:
+
+```bash
+bulkgrid runs status RUN_ID
+bulkgrid runs wait RUN_ID --timeout 60 --interval 5
+bulkgrid runs results RUN_ID --page 1 --limit 20
+bulkgrid runs content RUN_ID RESULT_ID --type markdown --output page.md
+bulkgrid runs screenshot RUN_ID RESULT_ID
+```
+
+`wait` returns `{run, runId, timedOut}`: exit 0 for completion, 1 for failed/cancelled runs or request errors, and 2 when the wait deadline expires. `run` is null if no status response arrived before the deadline. The deadline covers waiting, not the original submission or subsequent result retrieval. Keep the same run ID after timeout rather than submitting again. A completed run can still contain failed pages.
+
+Read Map URLs from `result_data.links` on the run. Read crawl/extraction pages through `runs results`, following `page`, `limit`, and `total`, and inspect each page's errors. Screenshots must have been requested during collection; retrieval returns a temporary URL. Use `runs retry RUN_ID --urls URL` or `runs cancel RUN_ID` only when authorized and permitted by the relevant scopes.
 
 ## Sign in
 

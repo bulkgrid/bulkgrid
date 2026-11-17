@@ -6,8 +6,30 @@ They connect to `https://bulkgrid.com/api/v1/mcp`. Existing connections keep the
 The prepared `0.2.0` packages require the matching MCP service and consent changes to be deployed. Live Claude and ChatGPT acceptance is pending; see [release acceptance](PLUGIN_RELEASE.md#capability-acceptance-for-020) for the required checks.
 
 The portable bundle lives in `plugins/bulkgrid/`. The Claude bundle lives in `plugins/bulkgrid-claude/`.
-These are generated files. Edit shared metadata in `packages/agent-core/` and instructions in `skills/bulkgrid/SKILL.md`.
-`bulkgrid-sources` remains a separate optional skill with explicit management permissions.
+These are generated files. Edit shared metadata in `packages/agent-core/` and instructions under `skills/`.
+Both bundles include `bulkgrid-index`, `bulkgrid-search`, `bulkgrid-crawl`, `bulkgrid-extract`, `bulkgrid-parse`, and `bulkgrid-sources`. Source management still requires explicit management permissions; bundling instructions does not enable tools or broaden consent.
+
+The same canonical skills are bundled in the CLI package and prefer terminal execution. Their instructions target CLI 0.6.0 or newer: use `bulkgrid status` and `bulkgrid login`, with no API key required. An existing `BULKGRID_API_KEY` takes precedence. Approve **Crawl, map, extract and parse** for web/document work and **Manage the index** for source management. Existing CLI grants need logout/login to add scopes; MCP consent is separate.
+
+The prepared `bulkgrid setup skills` installer copies the release's bundled skills into `.agents/skills`, with `--global` or `--directory` for another location. Existing edits are preserved unless `--force` is requested. This checkout's CLI source remains 0.5.0; sync the 0.6.0 implementation before publishing the updated skill bundle. MCP remains available for clients without a terminal and indexed document reading, but do not assume it exposes document parsing.
+
+## Skill coverage
+
+The public contracts, SDKs, MCP documentation, and packaging were reviewed for workflow coverage. CLI 0.6.0 authentication and command syntax were checked against the platform implementation. Keep focused workflows in six skills rather than adding a separate skill for each API endpoint.
+
+| Workflow | Skill | Capability boundary |
+| --- | --- | --- |
+| Indexed search, document reading, citations | `bulkgrid-index` | `bulkgrid index search` retrieves passages; MCP supports full indexed document reading. |
+| Live web, image and news search | `bulkgrid-search` | `bulkgrid search`; do not assume MCP indexed search is live search. |
+| Sitemap mapping, Crawl, Deep Crawl, screenshots | `bulkgrid-crawl` | `bulkgrid map`, `crawl`, and `deep-crawl`; screenshot retrieval requires a supporting SDK/API interface. |
+| Structured extraction and page-to-JSON parsing | `bulkgrid-extract` | URL input, query and JSON schema; validate data and retain source provenance. |
+| Extraction schema generation | `bulkgrid-extract` | REST-only in the public interface, with `extract:schema:generate`; no SDK helper is documented. |
+| Source analysis, ingestion, refresh and collections | `bulkgrid-sources` | Requires index-management permission and authorized visibility/refresh settings. |
+| Run status, pagination, partial failures, content retrieval | Search, crawl, extraction and parse skills | Shared workflow steps; a completed run can contain failed pages. |
+| Local document and image parsing | `bulkgrid-parse` | CLI 0.6.0 `parse` and `runs parse-result`; Markdown output with metadata, without a guarantee of exact layout preservation. |
+| Monitoring | Not included in OAuth app skills | Keep API-key monitoring separate; do not advertise an OAuth monitor tool. |
+
+The packaging allowlist in `scripts/plugins/shared.ts` selects released skills. Rebuild plugins with `npm run plugins:build` and CLI copies with `npm run skills:build` (also part of the CLI build). `npm run skills:check` detects CLI copy drift. Checks validate bundles, local references, source parity, and archive contents. Live client acceptance remains a separate release step.
 
 ## Installation candidates
 

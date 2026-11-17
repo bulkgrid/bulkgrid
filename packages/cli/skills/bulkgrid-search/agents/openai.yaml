@@ -1,0 +1,4 @@
+interface:
+  display_name: "Search the web"
+  short_description: "Find live web pages, images, and news with Bulkgrid"
+  default_prompt: "Use $bulkgrid-search to find five web pages about solar panel recycling."

@@ -9,7 +9,8 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { applyExportPlan, createExportPlan, formatExportPlan } from './applyExport.js';
 
 const REPOSITORY_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const TSX_CLI_PATH = resolve(REPOSITORY_ROOT, 'node_modules/.bin/tsx');
+// Execute TypeScript without the CLI's unnecessary IPC listener.
+const TSX_LOADER = import.meta.resolve('tsx');
 const APPLY_SCRIPT_PATH = resolve(REPOSITORY_ROOT, 'scripts/applyExport.ts');
 const CHECK_SCRIPT_PATH = resolve(REPOSITORY_ROOT, 'scripts/checkExport.ts');
 const fixtures: string[] = [];
@@ -40,7 +41,7 @@ const preservedFiles = [
   'MAINTAINERS.md',
   'CONTRIBUTING.md',
   'package-lock.json',
-  'skills/bulkgrid/SKILL.md',
+  'skills/bulkgrid-index/SKILL.md',
   'skills/bulkgrid-sources/SKILL.md',
   'plugins/bulkgrid/plugin.json',
   'packages/agent-core/metadata.json',
@@ -183,14 +184,14 @@ async function makeFixture({ includePython = true }: FixtureOptions = {}): Promi
 }
 
 function runTsx(scriptPath: string, args: readonly string[], cwd = REPOSITORY_ROOT) {
-  return spawnSync(process.execPath, [TSX_CLI_PATH, scriptPath, ...args], {
+  return spawnSync(process.execPath, ['--import', TSX_LOADER, scriptPath, ...args], {
     cwd,
     encoding: 'utf8',
   });
 }
 
 function runTsxEval(program: string, cwd: string) {
-  return spawnSync(process.execPath, [TSX_CLI_PATH, '--eval', program], {
+  return spawnSync(process.execPath, ['--import', TSX_LOADER, '--input-type=module', '--eval', program], {
     cwd,
     encoding: 'utf8',
   });

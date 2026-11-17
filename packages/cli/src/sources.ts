@@ -1,6 +1,7 @@
 import { Command } from 'commander';
 import { BulkgridClient, sourceInputSchemas } from '@bulkgrid/sdk';
 import { z } from 'zod';
+import { createApiClient } from './api.js';
 
 interface SourceCommandOptions {
   url?: string;
@@ -16,17 +17,7 @@ export function createSourceClient(options: SourceCommandOptions): BulkgridClien
       'Source commands require BULKGRID_API_KEY with explicit source/collection scopes. CLI OAuth login remains search-only.',
     );
   }
-  const baseUrl = new URL(options.url ?? process.env.BULKGRID_URL ?? 'https://bulkgrid.com');
-  if (baseUrl.username || baseUrl.password || baseUrl.search || baseUrl.hash || baseUrl.pathname !== '/') {
-    throw new Error('Use a Bulkgrid origin URL without credentials, a path, query, or fragment.');
-  }
-  if (
-    baseUrl.protocol !== 'https:' &&
-    !(baseUrl.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(baseUrl.hostname))
-  ) {
-    throw new Error('Remote Bulkgrid deployments require HTTPS.');
-  }
-  return new BulkgridClient({ apiKey, baseUrl: baseUrl.origin });
+  return createApiClient(options);
 }
 
 export function registerSourceCommands(program: Command, clientFactory: ClientFactory = createSourceClient): void {

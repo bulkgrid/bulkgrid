@@ -1,0 +1,4 @@
+interface:
+  display_name: "Parse documents"
+  short_description: "Convert local documents and images into Markdown"
+  default_prompt: "Use $bulkgrid-parse to convert the document I provide into Markdown."

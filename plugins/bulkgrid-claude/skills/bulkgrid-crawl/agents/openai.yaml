@@ -1,0 +1,4 @@
+interface:
+  display_name: "Crawl websites"
+  short_description: "Map websites and collect page content with Bulkgrid"
+  default_prompt: "Use $bulkgrid-crawl to crawl https://example.com and return its Markdown content."

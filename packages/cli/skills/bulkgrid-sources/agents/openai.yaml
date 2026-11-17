@@ -1,0 +1,4 @@
+interface:
+  display_name: "Manage index sources"
+  short_description: "Prepare sources and collections for indexed search"
+  default_prompt: "Use $bulkgrid-sources to inspect my sources and check their indexing readiness."

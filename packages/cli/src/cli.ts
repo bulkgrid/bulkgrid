@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 import { registerSourceCommands } from './sources.js';
+import { registerWebCommands } from './web.js';
+import { commandError } from './api.js';
+import { registerSkillCommands } from './skills.js';
 import packageMetadata from '../package.json' with { type: 'json' };
 import { Command } from 'commander';
 
@@ -78,8 +81,10 @@ program
   });
 
 registerSourceCommands(program);
+registerWebCommands(program);
+registerSkillCommands(program);
 
 program.parseAsync().catch(error => {
-  console.error(`bulkgrid: ${error instanceof Error ? error.message : 'Command failed'}`);
+  console.error(JSON.stringify(commandError(error)));
   process.exitCode = 1;
 });

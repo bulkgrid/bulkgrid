@@ -54,7 +54,9 @@ On macOS, use `TMPDIR=/private/tmp npm run check` if the plugin archive tests re
 
 ## Ownership and generation
 
-Author plugin resources and shared skills in this public repository. Keep `skills/bulkgrid` as the shared search, crawl, extraction, and index workflow source and keep source-management guidance in the separate `skills/bulkgrid-sources` skill. Generate installable plugin copies from their public source with the plugin scripts; do not edit generated copies directly.
+Author plugin resources and shared skills in this public repository. Keep `skills/bulkgrid-index` as the retrieval and workflow entry point, `skills/bulkgrid-search` for live discovery, `skills/bulkgrid-crawl` for mapping and crawling, `skills/bulkgrid-extract` for structured extraction, `skills/bulkgrid-parse` for document parsing, and `skills/bulkgrid-sources` for source management. Both plugin bundles include all six through the explicit allowlist in `scripts/plugins/shared.ts`. Generate installable plugin copies from their public source with the plugin scripts; do not edit generated copies directly.
+
+The CLI also bundles these skills under `packages/cli/skills`, generated with `npm run skills:build`; never edit those copies directly. `npm run skills:check` and the CLI prepack check detect drift, and the CLI build refreshes the copies. The bundled skill resources use Apache-2.0; the CLI implementation retains its existing license. The skills now require CLI 0.6.0. Before publishing, sync that platform implementation and preserve the public skill installer, bundled resources, and package scripts when applying the export.
 
 The private platform remains the source for SDKs, CLI, contracts, and service documentation. OpenAPI and contract output is generated from the platform schemas. Do not edit `packages/contracts/generated` or synchronized OpenAPI output independently.
 

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Search indexed content"
+  short_description: "Find cited evidence in your Bulkgrid index"
+  default_prompt: "Use $bulkgrid-index to search my indexed sources and answer with citations."

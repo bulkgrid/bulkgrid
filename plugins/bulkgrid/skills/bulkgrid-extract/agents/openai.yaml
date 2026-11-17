@@ -1,0 +1,4 @@
+interface:
+  display_name: "Extract structured data"
+  short_description: "Turn web pages into validated structured data"
+  default_prompt: "Use $bulkgrid-extract to extract product names and prices from the URLs I provide."

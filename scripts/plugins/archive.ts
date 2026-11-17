@@ -4,7 +4,7 @@ import { lstat, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { OUTPUTS, ROOT, assert, checkGeneratedOutputs, isRecord, inventoryPackage, packageRootFor } from './shared.js';
+import { BUNDLED_SKILLS, OUTPUTS, ROOT, assert, checkGeneratedOutputs, isRecord, inventoryPackage, packageRootFor } from './shared.js';
 import type { PackageInventoryEntry } from './shared.js';
 
 const ARCHIVER = path.join(ROOT, 'scripts/plugins/archive.py');
@@ -128,7 +128,7 @@ function dirtyInputPaths(): string[] {
     'packages/agent-claude/package.json',
     'packages/agent-claude/templates',
     'skills/LICENSE.md',
-    'skills/bulkgrid',
+    ...BUNDLED_SKILLS.map((skill) => `skills/${skill}`),
     'scripts/plugins',
     'plugins/bulkgrid',
     'plugins/bulkgrid-claude',

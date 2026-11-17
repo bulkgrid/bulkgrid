@@ -1,6 +1,6 @@
 {
   "name": "@bulkgrid/cli",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/bulkgrid/bulkgrid.git",
@@ -18,10 +18,12 @@
     "bulkgrid": "./dist/cli.js"
   },
   "files": [
-    "dist"
+    "dist",
+    "skills"
   ],
   "scripts": {
-    "build": "tsdown",
+    "build": "node --import tsx ../../scripts/cliSkills.ts --build && tsdown",
+    "prepack": "node --import tsx ../../scripts/cliSkills.ts --check",
     "lint": "eslint src",
     "check-types": "tsc --noEmit",
     "test": "vitest run",

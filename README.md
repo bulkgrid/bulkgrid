@@ -176,21 +176,34 @@ For an existing connection, revoke its access in **Settings → Connected Apps**
 
 ## CLI and agent skills
 
-The CLI configures MCP clients and manages Index sources with an API key:
+The skills target CLI 0.6.0 or newer for web and index search, crawling, extraction, document parsing, and source management. Browser login is the default; an API key is optional and takes precedence when `BULKGRID_API_KEY` is set.
 
 ```bash
-npx @bulkgrid/cli --help
+npx @bulkgrid/cli --version
+npx @bulkgrid/cli login
+npx @bulkgrid/cli search 'solar panel recycling' --limit 5
+npx @bulkgrid/cli crawl https://example.com --options '{"formats":["markdown"]}'
+npx @bulkgrid/cli parse ./report.pdf
+npx @bulkgrid/cli index search 'authentication setup' --limit 5
 npx @bulkgrid/cli sources find 'example.com'
 ```
 
-Source commands include `analyze`, `analyze-github`, `add`, `add-github`, `status`, and `recrawl`. Browser login creates a separate CLI OAuth connection. See the [CLI guide](docs/cli.mdx).
+Approve **Crawl, map, extract and parse** for web operations and document parsing, and **Manage the index** for source management. Use `status` to inspect the active login. Existing grants need logout/login to approve added scopes on the same deployment.
+
+The prepared `setup skills` installer copies all six bundled skills into the project's `.agents/skills` without authentication or network access. Use `--global` or `--directory` for another destination. Existing edits are preserved unless you pass `--force`; `--dry-run` previews changes. This checkout's CLI implementation is still 0.5.0 and must be synced to 0.6.0 before releasing these updated instructions. See the [CLI README](packages/cli/README.md) for the checkout's implementation and installer details.
 
 | Skill                                                | Purpose                                                            |
 | ---------------------------------------------------- | ------------------------------------------------------------------ |
-| [bulkgrid](skills/bulkgrid/SKILL.md)   | Retrieve cited evidence; use approved crawl, map, extraction, and index tools. |
+| [bulkgrid-index](skills/bulkgrid-index/SKILL.md)   | Search indexed sources and collections, read document passages, and cite evidence. |
+| [bulkgrid-search](skills/bulkgrid-search/SKILL.md) | Search the web for pages, images, and news. |
+| [bulkgrid-crawl](skills/bulkgrid-crawl/SKILL.md) | Crawl websites, map URLs, collect bounded content, and retrieve outputs. |
+| [bulkgrid-extract](skills/bulkgrid-extract/SKILL.md) | Parse web pages into structured fields, design schemas, and validate extraction results. |
+| [bulkgrid-parse](skills/bulkgrid-parse/SKILL.md) | Convert local documents and images into Markdown and retrieve parse results. |
 | [bulkgrid-sources](skills/bulkgrid-sources/SKILL.md) | Inspect sources, manage ingestion, and organize collection access. |
 
-Skills guide tool use; they do not create a connection or grant permissions.
+All six skills are bundled in the CLI package and both plugin bundles, generated from the same sources. They prefer CLI commands when a terminal is available and retain MCP/SDK fallback guidance. Skills do not grant permissions. `bulkgrid search` searches the live web; `bulkgrid index search` and MCP `search` retrieve indexed passages.
+
+For **parsing**, use `bulkgrid-parse` with CLI 0.6.0 for local documents and images, Crawl for readable web pages, and Extract for schema-based JSON from URLs. See the [skill coverage review](AGENT_PLUGINS.md#skill-coverage) for workflows and capability boundaries.
 
 ## In this repository
 

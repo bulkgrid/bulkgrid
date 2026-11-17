@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "bulkgrid",
-  "version": "0.2.1",
+  "version": "0.2.3",
   "description": "Search indexed sources, crawl and map websites, extract structured data, and manage your index with approved permissions.",
   "author": {
     "name": "Bulkgrid AB"
@@ -69,10 +69,10 @@
               "expected_behavior": "Start one run, check completion, read its results, and distinguish saved content from live state. Do not retry a mutation after an uncertain response."
             },
             {
-              "description": "Connect with web permissions and a reviewer-approved URL.",
-              "prompt": "Map https://example.com and extract the page title from its homepage.",
+              "description": "Connect with web permissions and a credit budget for one homepage extraction. Bulkgrid provides a sitemap; limit mapping to five URLs.",
+              "prompt": "Map https://bulkgrid.com with at most 5 URLs and extract the page title from its homepage.",
               "tools_triggered": "map, extract, get_run, list_run_results",
-              "expected_behavior": "Map discovers URLs; extract returns structured fields. Track both run IDs and only claim completion after returned evidence."
+              "expected_behavior": "Map returns up to five discovered URLs and preserves any budget warning; extract returns the homepage title as a structured field. Track both run IDs and only claim completion after returned evidence. If the sitemap is unavailable, report that accurately instead of inventing URLs."
             },
             {
               "description": "Connect with optional index management permission to a disposable workspace and an approved private test source.",
@@ -99,11 +99,11 @@
         "prompts": [
           "Search my Bulkgrid sources and answer with citations.",
           "Crawl https://example.com and show the resulting page content.",
-          "Map https://example.com and extract the page title from its homepage."
+          "Map https://bulkgrid.com with at most 5 URLs and extract the page title from its homepage."
         ]
       },
       "publication": {
-        "release_notes": "Adds guidance for optional Crawl, Map, Extract and index management permissions. Existing OAuth grants retain retrieval access until renewed consent."
+        "release_notes": "Bundles six CLI-first workflows targeting CLI 0.6.0: indexed retrieval, live search, crawling, structured extraction, document parsing, and source management. Uses browser login by default and documents API-key precedence, current command syntax, and permission boundaries. MCP fallback depends on exposed tools. Existing OAuth grants retain their approved permissions."
       }
     }
   }

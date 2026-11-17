@@ -62,7 +62,8 @@ export const OUTPUTS: readonly PluginOutput[] = [
   },
 ];
 
-const SKILL_SOURCE = 'skills/bulkgrid';
+// Keep an explicit allowlist: adding a local skill must not silently publish it.
+export const BUNDLED_SKILLS = ['bulkgrid-index', 'bulkgrid-search', 'bulkgrid-crawl', 'bulkgrid-extract', 'bulkgrid-parse', 'bulkgrid-sources'] as const;
 
 const CATALOGS: readonly {
   readonly file: string;
@@ -168,24 +169,27 @@ export async function sourceFiles(output: PluginOutput): Promise<ExpectedPackage
     files.set(destination, await readFile(sourcePath));
   }
 
-  const skillRoot = path.join(ROOT, SKILL_SOURCE);
-  const skillTree = await walkFiles(skillRoot);
-  assert(skillTree.files.length > 0, `Skill source has no files: ${SKILL_SOURCE}`);
-  for (const file of skillTree.files) {
-    const skillPath = relative(skillRoot, file);
-    const segments = skillPath.toLowerCase().split('/');
-    const name = segments.at(-1);
-    assert(name, `Invalid skill source path: ${skillPath}`);
-    assert(
-      !segments.some(
-        (segment) => segment.startsWith('.') || ['private', 'credentials', 'secrets', 'node_modules'].includes(segment),
-      ) &&
-        !/\.(?:pem|key)$/.test(name) &&
-        !/^id_(?:rsa|dsa|ecdsa|ed25519)(?:\.|$)/.test(name) &&
-        !/submission[-_]notes/.test(name),
-      `Private or unsupported skill source file: ${skillPath}`,
-    );
-    files.set(`skills/bulkgrid/${skillPath}`, await readFile(file));
+  for (const skill of BUNDLED_SKILLS) {
+    const skillRoot = path.join(ROOT, 'skills', skill);
+    const skillTree = await walkFiles(skillRoot);
+    assert(skillTree.files.includes(path.join(skillRoot, 'SKILL.md')), `Skill source is missing SKILL.md: ${skill}`);
+    for (const file of skillTree.files) {
+      const skillPath = relative(skillRoot, file);
+      const segments = skillPath.toLowerCase().split('/');
+      const name = segments.at(-1);
+      assert(name, `Invalid skill source path: ${skillPath}`);
+      assert(
+        !segments.some(
+          (segment) =>
+            segment.startsWith('.') || ['private', 'credentials', 'secrets', 'node_modules'].includes(segment),
+        ) &&
+          !/\.(?:pem|key)$/.test(name) &&
+          !/^id_(?:rsa|dsa|ecdsa|ed25519)(?:\.|$)/.test(name) &&
+          !/submission[-_]notes/.test(name),
+        `Private or unsupported skill source file: ${skillPath}`,
+      );
+      files.set(`skills/${skill}/${skillPath}`, await readFile(file));
+    }
   }
   return files;
 }

@@ -6,22 +6,26 @@ license: Apache-2.0
 
 # Prepare sources for retrieval
 
-Help the user make the right content searchable: check existing coverage, inspect the source, establish ingestion boundaries, add or subscribe, verify collection access, then check readiness. Use `bulkgrid` for answering questions from indexed content. Missing search results alone do not authorize adding or crawling a source.
+Help the user make the right content searchable: check existing coverage, inspect the source, establish ingestion boundaries, add or subscribe, verify collection access, then check readiness. Use `bulkgrid-index` for answering questions from indexed content. Missing search results alone do not authorize adding or crawling a source.
 
 ## Choose an available interface
 
-Prefer connected Bulkgrid MCP management tools when present. Tool availability depends on the deployed server and the connection's approved scopes; do not invent a tool or assume that a search connection has write access. API-key MCP also requires `mcp:use`. OAuth grants retrieval by default. Optional **Manage the index** consent enables source and collection operations on a supporting server, plus run permissions used for ingestion, Crawl and Map. Existing connections must revoke their old grant in Bulkgrid Settings → Connected Apps, reconnect, and approve the additional access. CLI source commands still require an API key even when a separate OAuth connection has management permission.
+Prefer `bulkgrid sources` commands when a terminal is available. Check `bulkgrid --version` and the relevant command's `--help`; these instructions target CLI 0.6.0 or newer. Check `bulkgrid status` first and use `bulkgrid login` if no session exists. Browser login is the default; no API key is required. An existing `BULKGRID_API_KEY` takes precedence over saved OAuth credentials. For browser login, leave that variable unset; never print credentials or switch identities to bypass a denial. Use the same `BULKGRID_URL` or `--url` deployment for login and commands.
 
-The CLI source commands use `BULKGRID_API_KEY` and optional `BULKGRID_URL`. Their output is JSON. The TypeScript SDK uses `BulkgridClient` with an API key and base URL. Use the installed version's help/schema; older releases may lack these operations. Never request secrets in chat, embed them in scripts, or substitute OAuth tokens for API keys.
+Approve **Manage the index** for source and collection operations. If an existing CLI grant lacks required scopes, explain the missing access and use `bulkgrid logout` followed by `bulkgrid login` on the same deployment to approve it. Existing MCP connections have separate consent managed by their client; reconnect there when needed. Web-operation consent alone does not grant index management.
+
+Use connected Bulkgrid MCP management tools when a terminal is unavailable or a required operation is not exposed in the installed CLI. Availability depends on the server and approved scopes; do not invent tools or assume a search connection has write access. API-key MCP also requires `mcp:use`. CLI output is JSON. SDK/API callers may use their configured authentication. Never request secrets in chat or embed them in scripts.
 
 | Operation                  | MCP tool              | CLI (`bulkgrid sources …`) | SDK (`client.index.sources.…`) | API-key scopes                   |
 | -------------------------- | --------------------- | -------------------------- | ------------------------ | -------------------------------- |
 | Find existing sources      | `find_sources`        | `find <query>`             | `search(query)`          | `sources:read`                   |
 | Start analysis             | `analyze_source`      | `analyze <url>`            | `analyze({url})`         | `sources:discover`, `runs:write` |
 | Read analysis              | `get_source_analysis` | `analysis-status <id>`     | `getAnalysis(id)`        | `sources:discover`               |
-| Add/subscribe to a website | `add_source`          | `add --input '<json>'`     | `create(input)`          | `sources:write`                  |
+| Add a website             | `create_source` (`add_source` alias) | `add --input '<json>'` | `create(input)`          | `sources:write`                  |
 | Check ingestion            | `get_source_status`   | `status <id>`              | `status(id)`             | `sources:read`                   |
-| Refresh existing source    | `recrawl_source`      | `recrawl <id>`             | `recrawl(id)`            | `sources:write`, `runs:write`    |
+| Refresh existing source    | `sync_source` (`recrawl_source` alias) | `recrawl <id>`      | `recrawl(id)`            | `sources:write`, `runs:write`    |
+
+For an existing public source, use `subscribe_source` when exposed or SDK `client.index.sources.subscribe(sourceId)` with `sources:write`. Subscription and inclusion in a collection are separate steps. Use aliases only when the live tool schema exposes them.
 
 For collection management, use `list_source_collections` / `sources collections`, `get_collection_rules` / `sources rules <collectionId>` (`collections:read`), and `add_source_to_collection` / `sources include <sourceId> <collectionId>` (`collections:write`). Use `create_collection` when the user requests a new collection and the tool is available. A collection-restricted grant does not automatically gain access to new collections. SDK equivalents are `client.index.collections.list()`, `.rules(id)`, `.create(input)`, and `.addSource({sourceId, collectionId})`.
 
@@ -36,7 +40,7 @@ These website add commands handle domain sources. For GitHub repositories, inspe
 
 ## Apply authorization and boundaries
 
-An API key grants technical capability; the user's request or standing instructions authorize the work. Proceed when they already cover the source and operation. Before otherwise unapproved resource-consuming work, present the source, visibility, selected paths/pages, maximum pages/depth, refresh policy, intended collection, and available estimate with uncertainties for approval. Ask only about material unresolved choices.
+An OAuth grant or API key grants technical capability; the user's request or standing instructions authorize the work. Proceed when they already cover the source and operation. Before otherwise unapproved resource-consuming work, present the source, visibility, selected paths/pages, maximum pages/depth, refresh policy, intended collection, and available estimate with uncertainties for approval. Ask only about material unresolved choices.
 
 Stay within established domains and budgets. Configure supported bounds explicitly. A page cap is not a monetary cap, and shared-source behavior may differ from private ingestion. If the available operation cannot enforce a required hard limit, explain that limitation before starting. Do not silently expand scope, change plans, or switch to broader credentials to make an operation succeed.
 

@@ -3,7 +3,7 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import { appendFile, cp, mkdtemp, mkdir, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { pathToFileURL } from 'node:url';
 import { afterAll, beforeAll, describe, it } from 'vitest';
 import { createPluginArchives } from './archive.js';
 import { buildPlugins } from './build.js';
@@ -20,14 +20,15 @@ import {
 import type { ExpectedPackages, PluginOutput } from './shared.js';
 
 const archiveHelper = path.join(ROOT, 'scripts/plugins/archive.py');
-const TSX_CLI = fileURLToPath(import.meta.resolve('tsx/cli'));
+// Execute TypeScript without the CLI's unnecessary IPC listener.
+const TSX_LOADER = import.meta.resolve('tsx');
 const runArchiveHelper = (...args: string[]): string =>
   execFileSync('python3', [archiveHelper, ...args], { cwd: ROOT, encoding: 'utf8' }).trim();
 const runTsx = (scriptPath: string, ...args: string[]): string =>
-  execFileSync(process.execPath, [TSX_CLI, scriptPath, ...args], { cwd: ROOT, encoding: 'utf8' });
+  execFileSync(process.execPath, ['--import', TSX_LOADER, scriptPath, ...args], { cwd: ROOT, encoding: 'utf8' });
 
 function runTsxResult(scriptPath: string, ...args: string[]) {
-  return spawnSync(process.execPath, [TSX_CLI, scriptPath, ...args], { cwd: ROOT, encoding: 'utf8' });
+  return spawnSync(process.execPath, ['--import', TSX_LOADER, scriptPath, ...args], { cwd: ROOT, encoding: 'utf8' });
 }
 
 function assertCliRejects(scriptPath: string, args: readonly string[], message: RegExp) {
@@ -138,10 +139,21 @@ describe('plugin packaging', () => {
       assert.equal(artifact.file, `${output.id}-${canonicalVersion}.zip`);
       assert.equal(artifact.sha256.length, 64);
       assert(checked.files.includes(output.manifest), 'Manifest must be at the package root path');
-      assert(
-        !checked.files.some((file) => file.includes('bulkgrid-sources')),
-        'Mutation skill must not ship in retrieval packages',
+      assert.deepEqual(
+        checked.files.filter((file) => file.endsWith('/SKILL.md')),
+        [
+          'skills/bulkgrid-crawl/SKILL.md',
+          'skills/bulkgrid-extract/SKILL.md',
+          'skills/bulkgrid-index/SKILL.md',
+          'skills/bulkgrid-parse/SKILL.md',
+          'skills/bulkgrid-search/SKILL.md',
+          'skills/bulkgrid-sources/SKILL.md',
+        ],
+        'Both plugins must ship the complete approved skill set',
       );
+      for (const file of checked.files.filter((file) => file.startsWith('skills/'))) {
+        assert.deepEqual(await readFile(path.join(packageDirectory, file)), await readFile(path.join(ROOT, file)));
+      }
     }
     assert(archiveArtifactFor(firstBuild, 'bulkgrid').files.some(({ path: file }) => file === 'plugin.json'));
     assert(
@@ -154,7 +166,7 @@ describe('plugin packaging', () => {
     const portablePackage = extracted.get('bulkgrid');
     assert.ok(portablePackage);
     await copyPackage(portablePackage, fixture);
-    await appendFile(path.join(fixture, 'skills/bulkgrid/SKILL.md'), '\n[escape](../../../../outside.md)\n');
+    await appendFile(path.join(fixture, 'skills/bulkgrid-index/SKILL.md'), '\n[escape](../../../../outside.md)\n');
     const portableOutput = outputById('bulkgrid');
     await assert.rejects(
       validatePackageDirectory(fixture, portableOutput, expectedFilesFor(expected, portableOutput)),
@@ -199,7 +211,7 @@ describe('plugin packaging', () => {
 
     const credentialFile = path.join(temporaryRoot, 'credential-fixture');
     await copyPackage(portablePackage, credentialFile);
-    await appendFile(path.join(credentialFile, 'skills/bulkgrid/SKILL.md'), '\nbg_live_12345678901234567890\n');
+    await appendFile(path.join(credentialFile, 'skills/bulkgrid-index/SKILL.md'), '\nbg_live_12345678901234567890\n');
     await assert.rejects(validatePackageDirectory(credentialFile, portableOutput, portableFiles), /Credential-like value/);
 
     const symlinkPackage = path.join(temporaryRoot, 'symlink-fixture');
@@ -233,17 +245,27 @@ describe('plugin packaging', () => {
     await mkdir(fixtureRoot, { recursive: true });
     await writeFile(path.join(fixtureRoot, 'package.json'), JSON.stringify({ type: 'module' }));
     for (const directory of ['packages/agent-core', 'packages/agent-claude', 'skills', 'scripts/plugins']) {
-      await cp(path.join(ROOT, directory), path.join(fixtureRoot, directory), { recursive: true });
+      await cp(path.join(ROOT, directory), path.join(fixtureRoot, directory), {
+        recursive: true,
+      });
     }
-    const privateFile = path.join(fixtureRoot, 'skills/bulkgrid/private.pem');
-    await writeFile(privateFile, '-----BEGIN PRIVATE KEY-----\nnot a real key\n');
     const fixtureBuild = path.join(fixtureRoot, 'scripts/plugins/build.ts');
-    const failure = runTsxResult(fixtureBuild);
-    assert.equal(failure.status, 1, failure.stderr);
-    assert.match(failure.stderr, /Private or unsupported skill source file: private\.pem/);
-    await assert.rejects(readFile(path.join(fixtureRoot, 'plugins/bulkgrid/skills/bulkgrid/private.pem')), {
-      code: 'ENOENT',
-    });
+    for (const skill of ['bulkgrid-index', 'bulkgrid-search', 'bulkgrid-crawl', 'bulkgrid-extract', 'bulkgrid-parse', 'bulkgrid-sources']) {
+      const privateFile = path.join(fixtureRoot, 'skills', skill, 'private.pem');
+      await writeFile(privateFile, '-----BEGIN PRIVATE KEY-----\nnot a real key\n');
+      const failure = runTsxResult(fixtureBuild);
+      assert.equal(failure.status, 1, failure.stderr);
+      assert.match(failure.stderr, /Private or unsupported skill source file: private\.pem/);
+      await assert.rejects(readFile(path.join(fixtureRoot, 'plugins/bulkgrid/skills', skill, 'private.pem')), {
+        code: 'ENOENT',
+      });
+      await rm(privateFile);
+    }
+
+    await rm(path.join(fixtureRoot, 'skills/bulkgrid-extract/SKILL.md'));
+    const missingSkill = runTsxResult(fixtureBuild);
+    assert.equal(missingSkill.status, 1, missingSkill.stderr);
+    assert.match(missingSkill.stderr, /Skill source is missing SKILL\.md: bulkgrid-extract/);
   });
 
   it('rejects invalid build and archive CLI arguments with usage errors', () => {
