@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "bulkgrid",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Search indexed sources, crawl and map websites, extract structured data, and manage your index with approved permissions.",
   "author": {
     "name": "Bulkgrid AB"
@@ -75,10 +75,10 @@
               "expected_behavior": "Map returns up to five discovered URLs and preserves any budget warning; extract returns the homepage title as a structured field. Track both run IDs and only claim completion after returned evidence. If the sitemap is unavailable, report that accurately instead of inventing URLs."
             },
             {
-              "description": "Connect with optional index management permission to a disposable workspace and an approved private test source.",
-              "prompt": "Add https://example.com as a private source with at most 5 pages and create a collection for it.",
-              "tools_triggered": "find_sources, create_source, create_collection, add_source_to_collection, get_source_status",
-              "expected_behavior": "Reuse an eligible existing source when appropriate. Preserve private visibility and the page limit, clarify any required recurring refresh settings, and check indexing status."
+              "description": "Connect with optional index management permission to a disposable paid workspace with an approved private test source and crawl budget.",
+              "prompt": "Add https://nodejs.org as a private source with up to five selected articles under /learn/getting-started and index them now. Create a collection named Node.js Demo, add the source to it, and verify that its indexed pages are searchable in the collection.",
+              "tools_triggered": "find_sources, create_source, get_source_status, sync_source, get_run, create_collection, add_source_to_collection, search",
+              "expected_behavior": "Preserve private visibility, the selected articles and the five-page limit. Clarify recurring refresh settings as needed. For a newly created source with no crawl run, call sync_source once with the returned source ID. Follow the run and confirm the indexed page count. Add the source to Node.js Demo and verify retrieval with a search scoped to both the source and collection."
             }
           ],
           "negative": [
