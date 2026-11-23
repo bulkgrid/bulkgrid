@@ -23,7 +23,7 @@ Use connected Bulkgrid MCP management tools when a terminal is unavailable or a 
 | Read analysis              | `get_source_analysis` | `analysis-status <id>`     | `getAnalysis(id)`        | `sources:discover`               |
 | Add a website             | `create_source` (`add_source` alias) | `add --input '<json>'` | `create(input)`          | `sources:write`                  |
 | Check ingestion            | `get_source_status`   | `status <id>`              | `status(id)`             | `sources:read`                   |
-| Refresh existing source    | `sync_source` (`recrawl_source` alias) | `recrawl <id>`      | `recrawl(id)`            | `sources:write`, `runs:write`    |
+| Start source sync          | `sync_source` (`recrawl_source` alias) | `recrawl <id>`      | `recrawl(id)`            | `sources:write`, `runs:write`    |
 
 For an existing public source, use `subscribe_source` when exposed or SDK `client.index.sources.subscribe(sourceId)` with `sources:write`. Subscription and inclusion in a collection are separate steps. Use aliases only when the live tool schema exposes them.
 
@@ -61,10 +61,11 @@ Example website configuration, **only when these choices are authorized**:
 
 ## Add, organize, and verify
 
-- Save `source.id` and `created` from creation; `created: false` can mean reuse. Do not create another source or recrawl just because indexing is not immediate.
+- Save `source.id` and `created` from creation. Website creation saves the crawl configuration and any recurring schedule. It does not start an immediate crawl.
+- For a website source with `created: true`, check source status. If it reports no runs and the user has authorized immediate indexing, start one sync with `sync_source({ sourceId })`, `bulkgrid sources recrawl <sourceId>`, or the SDK equivalent from the table. Use the saved source ID. The sync uses the saved crawl configuration, requires a paid plan, and may consume credits. If a crawl already exists, follow its status. Reused sources can be synced when the user requests a refresh.
 - Inspect collection rules before modifying them. Including an entire source broadens retrieval to its eligible documents. For selected-page or folder access, use the SDK/API's supported rule operations or the dashboard rather than substituting whole-source inclusion. Preserve unrelated rules.
 - Source creation and collection inclusion are separate operations, not a transaction. If the second fails, report the existing source ID and remaining step; do not retry creation or delete the source as automatic rollback.
-- Check source status for active crawling, errors, and indexed content. Some indexed items can support partial retrieval; they do not prove completion. When useful, make a focused search in the intended collection to verify retrieval, with `search:query` permission.
+- Retain the sync run ID and check source status for active crawling, errors, and indexed content. With MCP, use `get_run` when available for run details. Some indexed items can support partial retrieval; they do not prove completion. When useful, verify retrieval with a focused search scoped to the source and intended collection, with `search:query` permission.
 - Follow a reported polling interval; otherwise use a modest delay (for example 5–10 seconds) and a bounded wait (normally up to a minute for an interactive task). Stop on failure or when useful content is ready. On timeout, report IDs, current state, and how to resume; do not claim completion or keep polling indefinitely.
 
 ## Failures and completion
